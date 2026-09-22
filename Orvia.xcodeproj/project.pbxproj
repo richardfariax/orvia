@@ -38,6 +38,7 @@
 		626C041937763404A413991B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9E6E3443B21C0D6BA3A721 /* AppDelegate.swift */; };
 		67CE469D4F42DEAE02A52383 /* FanMetricsSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D383D4E6191EDEF5F8C21 /* FanMetricsSampler.swift */; };
 		75DF6FDD8A28C0608F0E16C4 /* orvia-master.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A3289FCB8B15EB08728DA7B /* orvia-master.png */; };
+		769071272D594209A071E803 /* SpeechVoiceCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66BC8624919B3E0D9E24E64A /* SpeechVoiceCatalog.swift */; };
 		78B789F18EB0938B01CA16FD /* BrandLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B9F063ECC02CC468A2894B /* BrandLogoView.swift */; };
 		7A7E152D97A35F3920E6DAAC /* StartupItemsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EF26A2B794EF710DA7B00CD /* StartupItemsService.swift */; };
 		7D384F267DD60EBBB942ED9B /* MenuBarPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F4076EB53DBEE4BC4D78385 /* MenuBarPopoverView.swift */; };
@@ -127,6 +128,7 @@
 		5B3E08747D1CA8992F073D14 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
 		5E624994D792908933D8B853 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		628CD6A5D3DB02F8C77C2B4A /* SystemKeySimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemKeySimulator.swift; sourceTree = "<group>"; };
+		66BC8624919B3E0D9E24E64A /* SpeechVoiceCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechVoiceCatalog.swift; sourceTree = "<group>"; };
 		6A13EBF57D2AA895BB2759E9 /* OrviaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrviaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D54265CE790DD175D5CB62F /* SystemMetricsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsModels.swift; sourceTree = "<group>"; };
 		6DB87C9DFA3D4530EC4C092E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -394,6 +396,7 @@
 				04FE4242E7C54BE23615FE1E /* PasteService.swift */,
 				E0832BA45DE2E837F41125CE /* ScreenAnalysisService.swift */,
 				CBE8B9B17C523E8526A254A4 /* ScreenshotService.swift */,
+				66BC8624919B3E0D9E24E64A /* SpeechVoiceCatalog.swift */,
 				F19E6C7D4FD632B6BF7D5933 /* SpokenResponseService.swift */,
 				1EC96B99BC6D6656369B210F /* SystemMetricsSampler.swift */,
 				8F02E9065B77FE26377CAE18 /* SystemMetricsService.swift */,
@@ -561,6 +564,7 @@
 				58848F1B8D0E1FD63CB1C7AC /* ScreenAnalysisService.swift in Sources */,
 				FDF90546D1A832992B55E85B /* ScreenshotService.swift in Sources */,
 				083F07FD69AE640C0AEF5FA6 /* SettingsView.swift in Sources */,
+				769071272D594209A071E803 /* SpeechVoiceCatalog.swift in Sources */,
 				364474D420591686796B2145 /* SpokenResponseService.swift in Sources */,
 				7A7E152D97A35F3920E6DAAC /* StartupItemsService.swift in Sources */,
 				C09558A4ECFCB7DF97DE0494 /* SystemDashboardView.swift in Sources */,

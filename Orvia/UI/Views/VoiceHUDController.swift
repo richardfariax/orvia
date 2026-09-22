@@ -18,13 +18,12 @@ final class VoiceHUDModel: ObservableObject {
     @Published var statusText: String = ""
     /// 0...1 — energia do microfone (usuário falando).
     @Published var userLevel: Double = 0
-    /// 0...1 — energia do TTS (Orvia falando).
-    @Published var assistantLevel: Double = 0
     /// 0...1 — progresso da leitura do texto pelo TTS.
     @Published var speechProgress: Double = 0
+    @Published var didCopyResponse = false
 }
 
-/// Overlay de tela cheia com campo de voz profissional (user vs Orvia).
+/// Painel compacto de voz que mantém o aplicativo em uso visível.
 @MainActor
 final class VoiceHUDController {
     private enum FeedbackSound: String {
@@ -34,6 +33,7 @@ final class VoiceHUDController {
     }
 
     var isSoundEnabled: () -> Bool = { true }
+    var localize: (String, String) -> String = { ptBR, _ in ptBR }
     /// Esc: aborta a interação atual (fala, captura, follow-up) e fecha o HUD.
     var onEscape: (() -> Void)?
 
@@ -42,6 +42,7 @@ final class VoiceHUDController {
     private var hideWorkItem: DispatchWorkItem?
     private var localKeyMonitor: Any?
     private var globalKeyMonitor: Any?
+    private var presentationGeneration = 0
 
     var isVisible: Bool {
         panel?.isVisible == true && (panel?.alphaValue ?? 0) > 0.05
@@ -53,15 +54,17 @@ final class VoiceHUDController {
         model.transcript = ""
         model.hintText = hint
         model.statusText = ""
-        model.assistantLevel = 0
         model.speechProgress = 0
+        model.didCopyResponse = false
         presentPanel()
         play(.wake)
         announce(hint)
     }
 
     func updateTranscript(_ transcript: String) {
+        let wasLong = model.transcript.count > 85
         model.transcript = transcript
+        if wasLong != (transcript.count > 85) { presentPanel() }
     }
 
     func showSearching(message: String) {
@@ -69,8 +72,8 @@ final class VoiceHUDController {
         model.phase = .searchingWeb
         model.statusText = message
         model.userLevel = 0
-        model.assistantLevel = 0
         model.speechProgress = 0
+        model.didCopyResponse = false
         presentPanel()
         announce(message)
     }
@@ -80,8 +83,8 @@ final class VoiceHUDController {
         model.phase = .thinking
         model.statusText = message
         model.userLevel = 0
-        model.assistantLevel = 0
         model.speechProgress = 0
+        model.didCopyResponse = false
         presentPanel()
         announce(message)
     }
@@ -95,13 +98,9 @@ final class VoiceHUDController {
             model.phase = .feedback(message: message, success: success)
         }
         model.statusText = ""
+        model.didCopyResponse = false
         model.userLevel = 0
-        if !speaking {
-            model.assistantLevel = 0
-            model.speechProgress = 0
-        } else {
-            model.speechProgress = 0
-        }
+        model.speechProgress = 0
         presentPanel()
         play(success ? .success : .failure)
         announce(message)
@@ -115,7 +114,6 @@ final class VoiceHUDController {
         case .speaking(let message, let success):
             if !speaking {
                 model.phase = .feedback(message: message, success: success)
-                model.assistantLevel = 0
                 model.speechProgress = 1
             }
         case .feedback(let message, let success):
@@ -136,10 +134,6 @@ final class VoiceHUDController {
         model.userLevel = max(0, min(1, level))
     }
 
-    func updateAssistantLevel(_ level: Double) {
-        model.assistantLevel = max(0, min(1, level))
-    }
-
     func updateSpeechProgress(_ progress: Double) {
         model.speechProgress = max(0, min(1, progress))
     }
@@ -149,16 +143,35 @@ final class VoiceHUDController {
         hideWorkItem = nil
         removeEscapeMonitors()
         model.userLevel = 0
-        model.assistantLevel = 0
         model.speechProgress = 0
         guard let panel else { return }
+        presentationGeneration += 1
+        let generation = presentationGeneration
 
         NSAnimationContext.runAnimationGroup({ context in
-            context.duration = 0.28
+            context.duration = 0.18
             panel.animator().alphaValue = 0
-        }, completionHandler: {
-            panel.orderOut(nil)
+        }, completionHandler: { [weak self] in
+            Task { @MainActor in
+                guard self?.presentationGeneration == generation else { return }
+                panel.orderOut(nil)
+            }
         })
+    }
+
+    private func copyResponse() {
+        let message: String
+        switch model.phase {
+        case .speaking(let text, _), .feedback(let text, _):
+            message = text
+        case .listening, .searchingWeb, .thinking:
+            return
+        }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        guard pasteboard.setString(message, forType: .string) else { return }
+        model.didCopyResponse = true
+        announce(localize("Resposta copiada", "Response copied"))
     }
 
     private func handleEscape() {
@@ -229,14 +242,23 @@ final class VoiceHUDController {
         }
         guard let panel else { return }
 
-        panel.setFrame(activeScreenFrame(), display: true)
+        presentationGeneration += 1
+        let frame = hudFrame()
+        if panel.isVisible, panel.frame != frame {
+            NSAnimationContext.runAnimationGroup { context in
+                context.duration = 0.18
+                panel.animator().setFrame(frame, display: true)
+            }
+        } else {
+            panel.setFrame(frame, display: true)
+        }
         installEscapeMonitorsIfNeeded()
 
         if !panel.isVisible {
             panel.alphaValue = 0
             panel.orderFrontRegardless()
             NSAnimationContext.runAnimationGroup { context in
-                context.duration = 0.28
+                context.duration = 0.18
                 panel.animator().alphaValue = 1
             }
         } else {
@@ -245,10 +267,15 @@ final class VoiceHUDController {
     }
 
     private func makePanel() -> NSPanel {
-        let hosting = NSHostingView(rootView: VoiceHUDView(model: model))
+        let hosting = NSHostingView(rootView: VoiceHUDView(
+            model: model,
+            localize: { [weak self] ptBR, en in self?.localize(ptBR, en) ?? ptBR },
+            onClose: { [weak self] in self?.handleEscape() },
+            onCopy: { [weak self] in self?.copyResponse() }
+        ))
 
         let panel = NSPanel(
-            contentRect: activeScreenFrame(),
+            contentRect: hudFrame(),
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
@@ -256,8 +283,8 @@ final class VoiceHUDController {
         panel.level = .statusBar
         panel.backgroundColor = .clear
         panel.isOpaque = false
-        panel.hasShadow = false
-        panel.ignoresMouseEvents = true
+        panel.hasShadow = true
+        panel.ignoresMouseEvents = false
         panel.hidesOnDeactivate = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         panel.contentView = hosting
@@ -266,11 +293,28 @@ final class VoiceHUDController {
         return panel
     }
 
-    private func activeScreenFrame() -> NSRect {
+    private func hudFrame() -> NSRect {
         let mouseLocation = NSEvent.mouseLocation
         let screen = NSScreen.screens.first(where: { NSMouseInRect(mouseLocation, $0.frame, false) })
             ?? NSScreen.main
-        return screen?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let visible = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
+        let width = min(600, max(320, visible.width - 32))
+        let contentLength: Int
+        switch model.phase {
+        case .listening:
+            contentLength = model.transcript.count
+        case .searchingWeb, .thinking:
+            contentLength = 0
+        case .speaking(let message, _), .feedback(let message, _):
+            contentLength = message.count
+        }
+        let height: CGFloat = contentLength > 85 ? 232 : 174
+        return NSRect(
+            x: visible.midX - width / 2,
+            y: visible.minY + 20,
+            width: width,
+            height: height
+        )
     }
 
     deinit {
@@ -287,25 +331,31 @@ final class VoiceHUDController {
 
 struct VoiceHUDView: View {
     @ObservedObject var model: VoiceHUDModel
+    let localize: (String, String) -> String
+    let onClose: () -> Void
+    let onCopy: () -> Void
 
     var body: some View {
         VoiceFieldView(
             phaseLabel: phaseLabel,
             message: primaryMessage,
-            statusLine: statusLine,
             speaker: activeSpeaker,
             userLevel: model.userLevel,
-            assistantLevel: model.assistantLevel,
             speechProgress: model.speechProgress,
-            isSpeakingCaption: isSpeakingCaption,
             isProcessing: isProcessing,
+            isShowingAnswer: isShowingAnswer,
             accent: accent,
-            successTint: successTint
+            closeLabel: localize("Fechar assistente", "Close assistant"),
+            copyLabel: model.didCopyResponse
+                ? localize("Resposta copiada", "Response copied")
+                : localize("Copiar resposta", "Copy response"),
+            didCopy: model.didCopyResponse,
+            shortcutHint: localize("Esc para fechar", "Esc to close"),
+            onClose: onClose,
+            onCopy: onCopy
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.easeInOut(duration: 0.28), value: moodKey)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(primaryMessage)
+        .animation(.easeInOut(duration: 0.18), value: moodKey)
     }
 
     private var primaryMessage: String {
@@ -319,33 +369,18 @@ struct VoiceHUDView: View {
         }
     }
 
-    private var statusLine: String {
-        switch model.phase {
-        case .listening:
-            return model.transcript.isEmpty ? "" : "Transcrição"
-        case .searchingWeb:
-            return "Internet"
-        case .thinking:
-            return "Modelo"
-        case .speaking:
-            return "Resposta"
-        case .feedback(_, let success):
-            return success ? "Concluído" : "Falhou"
-        }
-    }
-
     private var phaseLabel: String {
         switch model.phase {
         case .listening:
-            return activeSpeaker == .user ? "OUVINDO VOCÊ" : "OUVINDO"
+            return localize("Ouvindo", "Listening")
         case .searchingWeb:
-            return "CONSULTANDO"
+            return localize("Consultando a web", "Searching the web")
         case .thinking:
-            return "PROCESSANDO"
+            return localize("Pensando", "Thinking")
         case .speaking:
-            return "ORVIA FALANDO"
+            return localize("Falando", "Speaking")
         case .feedback(_, let success):
-            return success ? "PRONTO" : "ERRO"
+            return success ? localize("Pronto", "Done") : localize("Não concluído", "Not completed")
         }
     }
 
@@ -360,9 +395,11 @@ struct VoiceHUDView: View {
         }
     }
 
-    private var isSpeakingCaption: Bool {
-        if case .speaking = model.phase { return true }
-        return false
+    private var isShowingAnswer: Bool {
+        switch model.phase {
+        case .speaking, .feedback: return true
+        case .listening, .searchingWeb, .thinking: return false
+        }
     }
 
     private var isProcessing: Bool {
@@ -374,23 +411,14 @@ struct VoiceHUDView: View {
         }
     }
 
-    private var successTint: Bool? {
-        switch model.phase {
-        case .feedback(_, let success), .speaking(_, let success):
-            return success
-        default:
-            return nil
-        }
-    }
-
     private var accent: Color {
         switch model.phase {
         case .listening, .searchingWeb, .thinking, .speaking:
-            return Color(red: 0.45, green: 0.82, blue: 1.0)
+            return .accentColor
         case .feedback(_, let success):
             return success
-                ? Color(red: 0.4, green: 0.92, blue: 0.72)
-                : Color(red: 1.0, green: 0.55, blue: 0.35)
+                ? .accentColor
+                : .orange
         }
     }
 

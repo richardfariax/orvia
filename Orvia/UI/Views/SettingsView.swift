@@ -1,5 +1,4 @@
 import AppKit
-import AVFoundation
 import SwiftUI
 
 private enum SettingsPane: String, Identifiable, Hashable {
@@ -87,6 +86,8 @@ struct SettingsView: View {
     @State private var hotkeyRecorderMonitor: AnyObject?
     @State private var hotkeyRecorderMessage: String?
     @State private var voicePreviewService = SpokenResponseService()
+    @State private var isVoicePreviewPlaying = false
+    @ObservedObject private var voiceCatalog = SpeechVoiceCatalog.shared
     @StateObject private var generativeAnswers = GenerativeAnswerService()
 
     private let linkedInURL = URL(string: DeveloperProfileCatalog.linkedInURL)!
@@ -110,6 +111,7 @@ struct SettingsView: View {
             syncHotkeyPresetState()
             loadAvailableAppsIfNeeded()
             generativeAnswers.refreshStatus(userName: settings.userName.isEmpty ? nil : settings.userName)
+            voiceCatalog.load(for: settings.text(ptBR: "pt-BR", en: "en-US"))
         }
         .onReceive(NotificationCenter.default.publisher(for: .openSettingsPermissions)) { _ in
             selectedPane = .permissions
@@ -442,7 +444,7 @@ struct SettingsView: View {
 
     private var voiceForm: some View {
         let languageCode = settings.text(ptBR: "pt-BR", en: "en-US")
-        let voices = SpokenResponseService.availableVoices(for: languageCode)
+        let voices = voiceCatalog.languageCode == languageCode.lowercased() ? voiceCatalog.voices : []
         return VStack(alignment: .leading, spacing: 18) {
             paneHeader(
                 pane: .voice,
@@ -491,38 +493,56 @@ struct SettingsView: View {
                     Picker(t("Voz do Orvia", "Orvia voice"), selection: $settings.voiceIdentifier) {
                         Text(t("Automática · melhor disponível", "Automatic · best available"))
                             .tag("")
-                        ForEach(voices, id: \.identifier) { voice in
+                        ForEach(voices) { voice in
                             Text("\(voice.name) · \(voiceQualityName(voice.quality))")
-                                .tag(voice.identifier)
+                                .tag(voice.id)
                         }
                         if !settings.voiceIdentifier.isEmpty,
-                           !voices.contains(where: { $0.identifier == settings.voiceIdentifier }) {
+                           !voices.contains(where: { $0.id == settings.voiceIdentifier }) {
                             Text(t("Voz anterior indisponível", "Previous voice unavailable"))
                                 .tag(settings.voiceIdentifier)
                         }
                     }
-                    Button(t("Ouvir exemplo", "Play sample")) {
-                        voicePreviewService.speak(
-                            t(
-                                "Vamos organizar o que importa primeiro. Qual é a sua prioridade agora?",
-                                "Let's focus on what matters first. What's your priority right now?"
-                            ),
-                            languageCode: languageCode,
-                            preferredVoiceIdentifier: settings.voiceIdentifier
+                    Button {
+                        if isVoicePreviewPlaying {
+                            stopVoicePreview()
+                        } else {
+                            isVoicePreviewPlaying = true
+                            voicePreviewService.speak(
+                                t(
+                                    "Vamos organizar o que importa primeiro. Qual é a sua prioridade agora?",
+                                    "Let's focus on what matters first. What's your priority right now?"
+                                ),
+                                languageCode: languageCode,
+                                preferredVoiceIdentifier: settings.voiceIdentifier
+                            ) {
+                                isVoicePreviewPlaying = false
+                            }
+                        }
+                    } label: {
+                        Label(
+                            isVoicePreviewPlaying ? t("Parar exemplo", "Stop sample") : t("Ouvir exemplo", "Play sample"),
+                            systemImage: isVoicePreviewPlaying ? "stop.fill" : "play.fill"
                         )
                     }
                 } footer: {
                     Text(t(
-                        "Vozes premium ou aprimoradas instaladas no macOS aparecem primeiro. A prévia usa a voz selecionada.",
-                        "Premium or enhanced macOS voices appear first. The sample uses your selected voice."
+                        voiceCatalog.isLoading ? "Carregando vozes instaladas…" : "Vozes aprimoradas aparecem primeiro quando disponíveis.",
+                        voiceCatalog.isLoading ? "Loading installed voices…" : "Enhanced voices appear first when available."
                     ))
                 }
 
                 Section {
-                    Text(voiceExamplesText)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
+                    DisclosureGroup(t("Experimente dizer", "Try saying")) {
+                        VStack(alignment: .leading, spacing: 7) {
+                            ForEach(voiceExamples, id: \.self) { example in
+                                Text("“\(example)”")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.top, 6)
+                    }
                 }
 
                 if settings.voiceControlEnabled,
@@ -542,10 +562,20 @@ struct SettingsView: View {
             }
             .orviaSettingsFormStyle()
         }
-        .onDisappear { voicePreviewService.stop() }
+        .onChange(of: settings.voiceIdentifier) { _, _ in stopVoicePreview() }
+        .onChange(of: settings.language) { _, _ in
+            stopVoicePreview()
+            voiceCatalog.load(for: settings.text(ptBR: "pt-BR", en: "en-US"))
+        }
+        .onDisappear { stopVoicePreview() }
     }
 
-    private func voiceQualityName(_ quality: AVSpeechSynthesisVoiceQuality) -> String {
+    private func stopVoicePreview() {
+        voicePreviewService.stop()
+        isVoicePreviewPlaying = false
+    }
+
+    private func voiceQualityName(_ quality: SpeechVoiceOption.Quality) -> String {
         switch quality {
         case .premium:
             return t("premium", "premium")
@@ -913,12 +943,13 @@ struct SettingsView: View {
 
     // MARK: - Voice / AI helpers
 
-    private var voiceExamplesText: String {
+    private var voiceExamples: [String] {
         let prefix = settings.voiceActivationMode == .wakeWord ? "\(settings.voiceWakeWord), " : ""
-        return t(
-            "Exemplos: \"\(prefix)abra o Xcode\" · \"\(prefix)o que eu copiei\" · \"\(prefix)cole o item 2\" · \"\(prefix)quanto é 15 mais 7\" · \"\(prefix)veja o que está na tela\"",
-            "Examples: \"\(prefix)open Xcode\" · \"\(prefix)what did I copy\" · \"\(prefix)paste item 2\" · \"\(prefix)what is 15 plus 7\" · \"\(prefix)what's on the screen\""
-        )
+        return [
+            t("\(prefix)abra o Xcode", "\(prefix)open Xcode"),
+            t("\(prefix)o que eu copiei", "\(prefix)what did I copy"),
+            t("\(prefix)me ajude a priorizar meu dia", "\(prefix)help me prioritize my day")
+        ]
     }
 
     private var generativeStatusText: String {

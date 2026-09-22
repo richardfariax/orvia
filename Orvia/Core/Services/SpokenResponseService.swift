@@ -8,10 +8,8 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
     private var onFinish: (() -> Void)?
     private var activeUtterance: AVSpeechUtterance?
 
-    private(set) var speechLevel: Double = 0
     private(set) var speechProgress: Double = 0
     var playbackStartedHandler: (() -> Void)?
-    var speechLevelHandler: ((Double) -> Void)?
     var speechProgressHandler: ((Double) -> Void)?
 
     override init() {
@@ -44,40 +42,21 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
         if synthesizer.isSpeaking {
             synthesizer.stopSpeaking(at: .immediate)
         }
-        speechLevel = 0
         speechProgress = 0
-        speechLevelHandler?(0)
         speechProgressHandler?(0)
     }
 
-    static func availableVoices(for languageCode: String) -> [AVSpeechSynthesisVoice] {
-        let target = languageCode.lowercased()
-        let prefix = String(target.prefix(2))
-        let installed = AVSpeechSynthesisVoice.speechVoices()
-        let exact = installed.filter { $0.language.lowercased() == target }
-        let matching = exact.isEmpty
-            ? installed.filter { $0.language.lowercased().hasPrefix(prefix) }
-            : exact
-        return matching.enumerated().sorted {
-            if $0.element.quality.rawValue != $1.element.quality.rawValue {
-                return $0.element.quality.rawValue > $1.element.quality.rawValue
-            }
-            let firstIsEffect = $0.element.voiceTraits.contains(.isNoveltyVoice)
-                || $0.element.identifier.contains(".eloquence.")
-            let secondIsEffect = $1.element.voiceTraits.contains(.isNoveltyVoice)
-                || $1.element.identifier.contains(".eloquence.")
-            if firstIsEffect != secondIsEffect { return !firstIsEffect }
-            // Mantém a preferência do sistema quando qualidade e tipo são equivalentes.
-            return $0.offset < $1.offset
-        }.map(\.element)
-    }
-
     static func voice(for languageCode: String, preferredIdentifier: String) -> AVSpeechSynthesisVoice? {
-        let voices = availableVoices(for: languageCode)
-        if let preferred = voices.first(where: { $0.identifier == preferredIdentifier }) {
+        if !preferredIdentifier.isEmpty,
+           let preferred = AVSpeechSynthesisVoice(identifier: preferredIdentifier),
+           preferred.language.lowercased().hasPrefix(String(languageCode.lowercased().prefix(2))) {
             return preferred
         }
-        return voices.first ?? AVSpeechSynthesisVoice(language: languageCode)
+        if let automaticID = SpeechVoiceCatalog.shared.automaticVoiceIdentifier(for: languageCode),
+           let automatic = AVSpeechSynthesisVoice(identifier: automaticID) {
+            return automatic
+        }
+        return AVSpeechSynthesisVoice(language: languageCode)
     }
 
     nonisolated func speechSynthesizer(
@@ -85,8 +64,6 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
     ) {
         Task { @MainActor in
             guard activeUtterance === utterance else { return }
-            speechLevel = 1
-            speechLevelHandler?(1)
             playbackStartedHandler?()
         }
     }
@@ -111,9 +88,7 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             guard activeUtterance === utterance else { return }
             activeUtterance = nil
-            speechLevel = 0
             speechProgress = 1
-            speechLevelHandler?(0)
             speechProgressHandler?(1)
             let completion = onFinish
             onFinish = nil
@@ -127,8 +102,6 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             guard activeUtterance === utterance else { return }
             activeUtterance = nil
-            speechLevel = 0
-            speechLevelHandler?(0)
         }
     }
 }

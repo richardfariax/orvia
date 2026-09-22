@@ -209,9 +209,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func configureVoiceControl() {
         guard let panelViewModel, let pasteService, let screenshotService, let screenAnalysisService else { return }
 
+        SpeechVoiceCatalog.shared.load(for: settings.text(ptBR: "pt-BR", en: "en-US"))
+
         let hud = VoiceHUDController()
         hud.isSoundEnabled = { [weak self] in
             self?.settings.voiceSoundFeedback ?? true
+        }
+        hud.localize = { [weak self] ptBR, en in
+            self?.settings.text(ptBR: ptBR, en: en) ?? ptBR
         }
         hud.onEscape = { [weak self] in
             self?.abortVoiceHUDInteraction()
@@ -331,7 +336,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         spokenResponseService.stop()
         spokenResponseService.playbackStartedHandler = nil
-        spokenResponseService.speechLevelHandler = nil
         spokenResponseService.speechProgressHandler = nil
 
         voiceCommandService?.cancelActiveInteraction()
@@ -351,7 +355,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         voiceHUDController?.showFeedback(
             message: feedback.message,
             success: feedback.success,
-            autoHide: !willSpeak,
+            autoHide: false,
             speaking: false
         )
 
@@ -372,10 +376,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self, self.feedbackSessionID == sessionID else { return }
                 self.voiceHUDController?.setSpeaking(true)
             }
-            spokenResponseService.speechLevelHandler = { [weak self] level in
-                guard let self, self.feedbackSessionID == sessionID else { return }
-                self.voiceHUDController?.updateAssistantLevel(level)
-            }
             spokenResponseService.speechProgressHandler = { [weak self] progress in
                 guard let self, self.feedbackSessionID == sessionID else { return }
                 self.voiceHUDController?.updateSpeechProgress(progress)
@@ -387,10 +387,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ) { [weak self] in
                 guard let self, self.feedbackSessionID == sessionID else { return }
                 self.voiceHUDController?.setSpeaking(false)
-                self.voiceHUDController?.updateAssistantLevel(0)
                 self.voiceHUDController?.updateSpeechProgress(1)
                 self.spokenResponseService.playbackStartedHandler = nil
-                self.spokenResponseService.speechLevelHandler = nil
                 self.spokenResponseService.speechProgressHandler = nil
                 proceed()
             }

@@ -32,7 +32,7 @@ Busque texto e imagens copiados, fixe itens importantes, salve snippets e monte 
 
 Acione por `⌥⇧V` ou ative uma palavra de chamada opcional. O reconhecimento usa o Speech do macOS e prefere processamento no dispositivo quando disponível. As respostas faladas usam uma voz instalada no sistema. O modo de palavra de chamada mantém o microfone ativo enquanto espera o comando; o macOS mostra seu indicador de uso.
 
-Escolha e ouça uma prévia das vozes instaladas, inclusive opções premium quando disponíveis. A conversa ajuda a definir prioridades, dividir tarefas e redigir textos; ações do Mac são confirmadas imediatamente. Para perguntas que exigem dados atuais, o Orvia consulta a web quando esse contexto está ativado e avisa se não consegue confirmar a resposta.
+Escolha e ouça uma prévia das vozes instaladas, inclusive opções premium quando disponíveis. A conversa ajuda a definir prioridades, dividir tarefas e redigir textos; ações do Mac são confirmadas imediatamente. O painel de voz é compacto para não esconder o trabalho, mostra o andamento da resposta e permite copiá-la ou encerrar a interação. Para perguntas que exigem dados atuais, o Orvia consulta a web quando esse contexto está ativado e avisa se não consegue confirmar a resposta.
 
 ![Configurações de voz do Orvia](docs/screenshots/voz.jpg)
 
