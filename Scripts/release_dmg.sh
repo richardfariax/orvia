@@ -31,7 +31,7 @@ diskutil image create from \
   "${DMG_STAGING_DIR}" \
   "${DMG_PATH}"
 
-shasum -a 256 "${DMG_PATH}" > "${SHA_PATH}"
+(cd "${BUILD_DIR}" && shasum -a 256 "${SCHEME}.dmg" > "${SCHEME}.dmg.sha256")
 
 rm -rf "${DMG_STAGING_DIR}"
 

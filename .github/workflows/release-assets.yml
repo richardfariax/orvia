@@ -41,7 +41,7 @@ jobs:
           echo "Checkout/build na tag: ${tag}"
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.ref.outputs.checkout_ref }}
           fetch-depth: 0
@@ -112,6 +112,7 @@ jobs:
       - name: Build release artifacts
         run: |
           ./Scripts/release.sh
+          (cd build && shasum -a 256 Orvia.zip > Orvia.zip.sha256)
 
       - name: Sign and notarize app
         if: steps.distribution.outputs.mode == 'notarized'
@@ -137,7 +138,7 @@ jobs:
           xcrun stapler staple "${app}"
           spctl --assess --type execute --verbose=2 "${app}"
           ditto -c -k --sequesterRsrc --keepParent "${app}" build/Orvia.zip
-          shasum -a 256 build/Orvia.zip > build/Orvia.zip.sha256
+          (cd build && shasum -a 256 Orvia.zip > Orvia.zip.sha256)
 
       - name: Build DMG
         env:
@@ -156,13 +157,13 @@ jobs:
               --wait --output-format json | /usr/bin/python3 -c \
                 'import json,sys; result=json.load(sys.stdin); print(result["status"]); sys.exit(result["status"] != "Accepted")'
             xcrun stapler staple build/Orvia.dmg
-            shasum -a 256 build/Orvia.dmg > build/Orvia.dmg.sha256
           fi
+          (cd build && shasum -a 256 Orvia.dmg > Orvia.dmg.sha256)
 
       - name: Verify built app version
         run: |
           ./Scripts/version.sh verify-app "build/Orvia.xcarchive/Products/Applications/Orvia.app"
-          shasum -a 256 -c build/Orvia.zip.sha256 build/Orvia.dmg.sha256
+          (cd build && shasum -a 256 -c Orvia.zip.sha256 Orvia.dmg.sha256)
 
       - name: Publish GitHub Release with verified assets
         env:
@@ -184,39 +185,35 @@ jobs:
             release_state="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
           fi
 
-          if [[ "${release_state}" == "false" ]]; then
-            echo "Release ${TAG_NAME} is already public; checking its assets."
-          else
-            if [[ "${release_state}" == "missing" ]]; then
-              notes_path="${RUNNER_TEMP}/orvia-release-notes.md"
-              if [[ "${DISTRIBUTION_MODE}" == "notarized" ]]; then
-                distribution_note="Assinado e notarizado pela Apple."
-              else
-                distribution_note="Esta distribuição não é assinada nem notarizada pela Apple. O macOS pode pedir confirmação em Ajustes > Privacidade e Segurança para abrir o app."
-              fi
-
-              {
-                echo "## Instalação"
-                echo ""
-                echo "Baixe **Orvia.dmg**, abra o arquivo e arraste **Orvia.app** para Aplicativos."
-                echo ""
-                echo "${distribution_note}"
-                echo ""
-                echo "## Alterações"
-                echo ""
-                previous_tag="$(git tag --list | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${TAG_NAME}$" | sort -V | tail -n 1 || true)"
-                if [[ -n "${previous_tag}" ]]; then
-                  git log --format='- %s' --no-merges "${previous_tag}..${TAG_NAME}"
-                else
-                  git log -1 --format='- %s' "${TAG_NAME}"
-                fi
-              } > "${notes_path}"
-
-              gh release create "${TAG_NAME}" --draft --verify-tag \
-                --title "Orvia ${TAG_NAME}" --notes-file "${notes_path}"
+          if [[ "${release_state}" == "missing" ]]; then
+            notes_path="${RUNNER_TEMP}/orvia-release-notes.md"
+            if [[ "${DISTRIBUTION_MODE}" == "notarized" ]]; then
+              distribution_note="Assinado e notarizado pela Apple."
+            else
+              distribution_note="Esta distribuição não é assinada nem notarizada pela Apple. O macOS pode pedir confirmação em Ajustes > Privacidade e Segurança para abrir o app."
             fi
-            gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
+
+            {
+              echo "## Instalação"
+              echo ""
+              echo "Baixe **Orvia.dmg**, abra o arquivo e arraste **Orvia.app** para Aplicativos."
+              echo ""
+              echo "${distribution_note}"
+              echo ""
+              echo "## Alterações"
+              echo ""
+              previous_tag="$(git tag --list | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${TAG_NAME}$" | sort -V | tail -n 1 || true)"
+              if [[ -n "${previous_tag}" ]]; then
+                git log --format='- %s' --no-merges "${previous_tag}..${TAG_NAME}"
+              else
+                git log -1 --format='- %s' "${TAG_NAME}"
+              fi
+            } > "${notes_path}"
+
+            gh release create "${TAG_NAME}" --draft --verify-tag \
+              --title "Orvia ${TAG_NAME}" --notes-file "${notes_path}"
           fi
+          gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
 
           uploaded_assets="$(gh release view "${TAG_NAME}" --json assets --jq '.assets[].name')"
           for asset in Orvia.dmg Orvia.dmg.sha256 Orvia.zip Orvia.zip.sha256; do

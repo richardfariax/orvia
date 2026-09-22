@@ -59,7 +59,7 @@ fi
 ./Scripts/version.sh verify-app "${APP_PATH}"
 
 ditto -c -k --sequesterRsrc --keepParent "${APP_PATH}" "${ZIP_PATH}"
-shasum -a 256 "${ZIP_PATH}" > "${SHA_PATH}"
+(cd "${BUILD_DIR}" && shasum -a 256 "${SCHEME}.zip" > "${SCHEME}.zip.sha256")
 
 echo "Archive gerado: ${ARCHIVE_PATH}"
 echo "Pacote para GitHub Releases: ${ZIP_PATH}"

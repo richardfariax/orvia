@@ -48,9 +48,9 @@ jobs:
           }
           ./Scripts/release_dmg.sh
           ./Scripts/version.sh verify-app "build/Orvia.xcarchive/Products/Applications/Orvia.app"
-          shasum -a 256 -c build/Orvia.zip.sha256 build/Orvia.dmg.sha256
+          (cd build && shasum -a 256 -c Orvia.zip.sha256 Orvia.dmg.sha256)
           echo "### Orvia ${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }})" >> "${GITHUB_STEP_SUMMARY}"
-          echo "Tests, ZIP, DMG, app version and SHA-256 checks passed. CI packages are unsigned; the public release requires Apple Developer ID signing and notarization." >> "${GITHUB_STEP_SUMMARY}"
+          echo "Tests, ZIP, DMG, app version and SHA-256 checks passed. CI packages are unsigned; public releases state their signing status." >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Upload unsigned CI packages
         uses: actions/upload-artifact@v6
