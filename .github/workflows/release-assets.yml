@@ -4,12 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Existing release tag to upload assets to (e.g. 2.0.0)"
+        description: "Existing release tag to build and publish (e.g. 4.1.1)"
         required: true
         type: string
-  release:
-    types:
-      - published
 
 permissions:
   contents: write
@@ -17,12 +14,16 @@ permissions:
 jobs:
   build-and-upload:
     runs-on: xcode-27
+    timeout-minutes: 60
+    concurrency:
+      group: release-${{ inputs.release_tag }}
+      cancel-in-progress: false
 
     steps:
       - name: Resolve checkout ref
         id: ref
         env:
-          RAW_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+          RAW_TAG: ${{ inputs.release_tag }}
         run: |
           set -euo pipefail
           if [[ -z "${RAW_TAG:-}" ]]; then
@@ -31,6 +32,10 @@ jobs:
           fi
           # Tags do Orvia usam X.Y.Z (sem prefixo v).
           tag="${RAW_TAG#v}"
+          if [[ ! "${tag}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid release tag: ${RAW_TAG}" >&2
+            exit 1
+          fi
           echo "checkout_ref=${tag}" >> "${GITHUB_OUTPUT}"
           echo "raw_tag=${RAW_TAG}" >> "${GITHUB_OUTPUT}"
           echo "Checkout/build na tag: ${tag}"
@@ -53,7 +58,8 @@ jobs:
           ./Scripts/version.sh check
           ./Scripts/version.sh compare-tag "${RAW_TAG}"
 
-      - name: Check distribution credentials
+      - name: Select distribution mode
+        id: distribution
         env:
           CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
@@ -63,14 +69,24 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euo pipefail
+          configured=0
           for name in CERTIFICATE_BASE64 CERTIFICATE_PASSWORD SIGNING_IDENTITY APPLE_ID APPLE_APP_PASSWORD APPLE_TEAM_ID; do
-            if [[ -z "${!name}" ]]; then
-              echo "Missing distribution secret: ${name}" >&2
-              exit 1
+            if [[ -n "${!name}" ]]; then
+              configured=$((configured + 1))
             fi
           done
+          if [[ "${configured}" -eq 6 ]]; then
+            echo "mode=notarized" >> "${GITHUB_OUTPUT}"
+          elif [[ "${configured}" -eq 0 ]]; then
+            echo "mode=unsigned" >> "${GITHUB_OUTPUT}"
+            echo "Apple distribution credentials are absent; publishing unsigned packages with explicit release notes."
+          else
+            echo "Apple distribution credentials are incomplete (${configured}/6)." >&2
+            exit 1
+          fi
 
       - name: Import Developer ID certificate
+        if: steps.distribution.outputs.mode == 'notarized'
         env:
           CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
           CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
@@ -98,6 +114,7 @@ jobs:
           ./Scripts/release.sh
 
       - name: Sign and notarize app
+        if: steps.distribution.outputs.mode == 'notarized'
         env:
           SIGNING_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -122,97 +139,94 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "${app}" build/Orvia.zip
           shasum -a 256 build/Orvia.zip > build/Orvia.zip.sha256
 
-      - name: Build and notarize DMG
+      - name: Build DMG
         env:
+          DISTRIBUTION_MODE: ${{ steps.distribution.outputs.mode }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
+          set -euo pipefail
           ./Scripts/release_dmg.sh
-          xcrun notarytool submit build/Orvia.dmg \
-            --apple-id "${APPLE_ID}" \
-            --password "${APPLE_APP_PASSWORD}" \
-            --team-id "${APPLE_TEAM_ID}" \
-            --wait --output-format json | /usr/bin/python3 -c \
-              'import json,sys; result=json.load(sys.stdin); print(result["status"]); sys.exit(result["status"] != "Accepted")'
-          xcrun stapler staple build/Orvia.dmg
-          shasum -a 256 build/Orvia.dmg > build/Orvia.dmg.sha256
+          if [[ "${DISTRIBUTION_MODE}" == "notarized" ]]; then
+            xcrun notarytool submit build/Orvia.dmg \
+              --apple-id "${APPLE_ID}" \
+              --password "${APPLE_APP_PASSWORD}" \
+              --team-id "${APPLE_TEAM_ID}" \
+              --wait --output-format json | /usr/bin/python3 -c \
+                'import json,sys; result=json.load(sys.stdin); print(result["status"]); sys.exit(result["status"] != "Accepted")'
+            xcrun stapler staple build/Orvia.dmg
+            shasum -a 256 build/Orvia.dmg > build/Orvia.dmg.sha256
+          fi
 
       - name: Verify built app version
         run: |
           ./Scripts/version.sh verify-app "build/Orvia.xcarchive/Products/Applications/Orvia.app"
+          shasum -a 256 -c build/Orvia.zip.sha256 build/Orvia.dmg.sha256
 
-      - name: Resolve target release tag
-        id: resolve_tag
+      - name: Publish GitHub Release with verified assets
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RAW_TAG: ${{ steps.ref.outputs.raw_tag }}
+          TAG_NAME: ${{ steps.ref.outputs.checkout_ref }}
+          DISTRIBUTION_MODE: ${{ steps.distribution.outputs.mode }}
         run: |
           set -euo pipefail
 
-          tag_name="${RAW_TAG}"
-          if [[ "${tag_name}" == v* ]]; then
-            alt_tag="${tag_name#v}"
+          assets=(
+            build/Orvia.dmg
+            build/Orvia.dmg.sha256
+            build/Orvia.zip
+            build/Orvia.zip.sha256
+          )
+
+          release_state="missing"
+          if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
+            release_state="$(gh release view "${TAG_NAME}" --json isDraft --jq '.isDraft')"
+          fi
+
+          if [[ "${release_state}" == "false" ]]; then
+            echo "Release ${TAG_NAME} is already public; checking its assets."
           else
-            alt_tag="v${tag_name}"
+            if [[ "${release_state}" == "missing" ]]; then
+              notes_path="${RUNNER_TEMP}/orvia-release-notes.md"
+              if [[ "${DISTRIBUTION_MODE}" == "notarized" ]]; then
+                distribution_note="Assinado e notarizado pela Apple."
+              else
+                distribution_note="Esta distribuição não é assinada nem notarizada pela Apple. O macOS pode pedir confirmação em Ajustes > Privacidade e Segurança para abrir o app."
+              fi
+
+              {
+                echo "## Instalação"
+                echo ""
+                echo "Baixe **Orvia.dmg**, abra o arquivo e arraste **Orvia.app** para Aplicativos."
+                echo ""
+                echo "${distribution_note}"
+                echo ""
+                echo "## Alterações"
+                echo ""
+                previous_tag="$(git tag --list | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${TAG_NAME}$" | sort -V | tail -n 1 || true)"
+                if [[ -n "${previous_tag}" ]]; then
+                  git log --format='- %s' --no-merges "${previous_tag}..${TAG_NAME}"
+                else
+                  git log -1 --format='- %s' "${TAG_NAME}"
+                fi
+              } > "${notes_path}"
+
+              gh release create "${TAG_NAME}" --draft --verify-tag \
+                --title "Orvia ${TAG_NAME}" --notes-file "${notes_path}"
+            fi
+            gh release upload "${TAG_NAME}" "${assets[@]}" --clobber
           fi
 
-          resolve_release_tag() {
-            local candidate="$1"
-            if gh release view "${candidate}" >/dev/null 2>&1; then
-              echo "${candidate}"
-              return 0
+          uploaded_assets="$(gh release view "${TAG_NAME}" --json assets --jq '.assets[].name')"
+          for asset in Orvia.dmg Orvia.dmg.sha256 Orvia.zip Orvia.zip.sha256; do
+            if ! grep -Fxq "${asset}" <<< "${uploaded_assets}"; then
+              echo "Missing release asset: ${asset}" >&2
+              exit 1
             fi
-            return 1
-          }
+          done
 
-          find_release_tag() {
-            local primary="$1"
-            local alternate="$2"
-            local candidate=""
-
-            if candidate="$(resolve_release_tag "${primary}")"; then
-              echo "${candidate}"
-              return 0
-            fi
-            if candidate="$(resolve_release_tag "${alternate}")"; then
-              echo "${candidate}"
-              return 0
-            fi
-
-            echo "Aguardando publicação da release '${primary}'..." >&2
-            for _ in $(seq 1 24); do
-              sleep 5
-              if candidate="$(resolve_release_tag "${primary}")"; then
-                echo "${candidate}"
-                return 0
-              fi
-              if candidate="$(resolve_release_tag "${alternate}")"; then
-                echo "${candidate}"
-                return 0
-              fi
-            done
-            return 1
-          }
-
-          if ! tag_name="$(find_release_tag "${tag_name}" "${alt_tag}")"; then
-            echo "Erro: release não encontrada para '${RAW_TAG}' (também testado '${alt_tag}')." >&2
-            echo "Releases disponíveis:" >&2
-            gh release list --limit 20 >&2
-            exit 1
+          if [[ "${release_state}" != "false" ]]; then
+            gh release edit "${TAG_NAME}" --draft=false --latest
           fi
-
-          echo "resolved_tag=${tag_name}" >> "${GITHUB_OUTPUT}"
-          echo "Release alvo: ${tag_name}"
-
-      - name: Upload assets to GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG_NAME: ${{ steps.resolve_tag.outputs.resolved_tag }}
-        run: |
-          gh release upload "$TAG_NAME" \
-            build/Orvia.dmg \
-            build/Orvia.dmg.sha256 \
-            build/Orvia.zip \
-            build/Orvia.zip.sha256 \
-            --clobber
+          gh release view "${TAG_NAME}" --json isDraft,url --jq '{isDraft,url}'

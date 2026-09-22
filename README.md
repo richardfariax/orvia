@@ -16,7 +16,7 @@ Clipboard, voz, desempenho e cuidado em um aplicativo nativo para macOS.</p>
   <a href="#para-desenvolvedores">Desenvolvimento</a>
 </p>
 
-> **Código 4.1.0 (build 20).** O instalador desta versão será disponibilizado na [página de releases](https://github.com/richardfariax/orvia/releases) após a assinatura e notarização pela Apple. Até lá, compile o projeto com as instruções abaixo.
+> **Versão 4.1.1 (build 21).** Baixe o [Orvia.dmg da release mais recente](https://github.com/richardfariax/orvia/releases/latest/download/Orvia.dmg). As releases são compiladas e testadas no GitHub Actions antes da publicação.
 
 ![Central do Orvia com métricas ao vivo do Mac](docs/screenshots/central.jpg)
 
@@ -62,14 +62,16 @@ CPU, memória e temperatura podem aparecer lado a lado com seus próprios ícone
 
 **Requisitos:** Mac com Apple Silicon e macOS 27 ou posterior. Para compilar, use Xcode 27 e [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-Para compilar o código 4.1.0:
+Para instalar, abra o DMG e arraste `Orvia.app` para Aplicativos. As releases atuais **não são assinadas nem notarizadas pela Apple**. Verifique que o download veio deste repositório e confira o arquivo `Orvia.dmg.sha256` da mesma release. O macOS pode pedir uma confirmação adicional ao abrir o app; veja as [orientações da Apple](https://support.apple.com/pt-br/102445).
+
+Para compilar o código 4.1.1:
 
 ```bash
 xcodegen generate
 xcodebuild -project Orvia.xcodeproj -scheme Orvia -configuration Release -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
 ```
 
-`Scripts/release.sh` gera um ZIP local e `Scripts/release_dmg.sh` gera um DMG local em `build/`. Esses artefatos locais não são assinados nem notarizados. O [cask Homebrew deste repositório](Casks/orvia.rb) estará disponível após a publicação do `Orvia.dmg` assinado e notarizado na [página de releases](https://github.com/richardfariax/orvia/releases).
+`Scripts/release.sh` gera um ZIP local e `Scripts/release_dmg.sh` gera um DMG local em `build/`. O [cask Homebrew deste repositório](Casks/orvia.rb) usa o DMG da release mais recente.
 
 ## Privacidade e permissões
 
@@ -87,7 +89,7 @@ xcodebuild -project Orvia.xcodeproj -scheme Orvia -configuration Release -destin
 xcodebuild -project Orvia.xcodeproj -scheme Orvia -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO test
 ```
 
-`Scripts/generate_brand_assets.py` reproduz os ícones a partir do master em `Orvia/Resources/Brand`. O workflow de publicação compila, assina e notariza os artefatos quando os segredos de distribuição da Apple estão configurados.
+`Scripts/generate_brand_assets.py` reproduz os ícones a partir do master em `Orvia/Resources/Brand`. Ao receber uma versão nova na `main`, o workflow de publicação cria a tag, executa testes, compila ZIP e DMG, confere versão e SHA-256 e só então publica a release com os quatro arquivos. Quando as credenciais Apple Developer ID estiverem configuradas, o mesmo fluxo também assina e notariza os pacotes.
 
 O [workflow de verificação](https://github.com/richardfariax/orvia/actions/workflows/verify-build.yml) executa testes, gera ZIP e DMG e verifica os checksums sem depender das credenciais de distribuição. Os artefatos desse workflow são apenas para CI: não são assinados nem notarizados.
 

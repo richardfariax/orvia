@@ -1,21 +1,18 @@
 name: Auto Version and Release
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - main
-      - master
+  workflow_dispatch:
 
 permissions:
   actions: write
   contents: write
 
 jobs:
-  release-on-merge:
-    if: github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'master') && github.event.pull_request.head.ref == 'dev'
-    runs-on: macos-latest
+  prepare-release:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -26,9 +23,8 @@ jobs:
       - name: Calculate next version
         id: semver
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
+          BASE_SHA: ${{ github.event.before }}
+          MERGE_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
 
@@ -66,11 +62,15 @@ jobs:
             exit 0
           fi
 
-          commit_messages="$(git log --format=%s "${BASE_SHA}..${MERGE_SHA}" || true)"
-          if [[ -z "${commit_messages}" ]]; then
-            commit_messages="${PR_TITLE}"
+          if [[ -n "${BASE_SHA:-}" ]] && git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            commit_range="${BASE_SHA}..${MERGE_SHA}"
+          elif [[ -n "${latest_tag}" ]]; then
+            commit_range="${latest_tag}..${MERGE_SHA}"
+          else
+            commit_range="${MERGE_SHA}^..${MERGE_SHA}"
           fi
-          commit_bodies="$(git log --format=%b "${BASE_SHA}..${MERGE_SHA}" || true)"
+          commit_messages="$(git log --format=%s "${commit_range}")"
+          commit_bodies="$(git log --format=%b "${commit_range}")"
 
           bump_type="none"
           if printf '%s\n%s\n' "${commit_messages}" "${commit_bodies}" | grep -Eiq 'BREAKING CHANGE:|^(feat|fix|perf|refactor|chore)(\([^)]+\))?!:'; then
@@ -116,25 +116,7 @@ jobs:
 
       - name: Stop when no release is needed
         if: steps.semver.outputs.should_release != 'true'
-        run: echo "Sem release para este merge."
-
-      - name: Check distribution credentials
-        if: steps.semver.outputs.should_release == 'true'
-        env:
-          CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
-          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
-          SIGNING_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          set -euo pipefail
-          for name in CERTIFICATE_BASE64 CERTIFICATE_PASSWORD SIGNING_IDENTITY APPLE_ID APPLE_APP_PASSWORD APPLE_TEAM_ID; do
-            if [[ -z "${!name}" ]]; then
-              echo "Missing distribution secret: ${name}" >&2
-              exit 1
-            fi
-          done
+        run: echo "Nenhuma release necessária para este push."
 
       - name: Set git identity
         if: steps.semver.outputs.should_release == 'true'
@@ -154,7 +136,7 @@ jobs:
       - name: Commit and push version bump
         if: steps.semver.outputs.should_release == 'true' && steps.semver.outputs.already_bumped != 'true'
         env:
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BASE_REF: main
           NEXT_VERSION: ${{ steps.semver.outputs.next_version }}
           NEXT_BUILD: ${{ steps.semver.outputs.next_build }}
         run: |
@@ -163,12 +145,11 @@ jobs:
           git commit -m "chore(release): ${NEXT_VERSION} (build ${NEXT_BUILD}) [skip ci]"
           git push origin "${BASE_REF}"
 
-      - name: Create Git tag and GitHub Release
+      - name: Create Git tag
         if: steps.semver.outputs.should_release == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_VERSION: ${{ steps.semver.outputs.next_version }}
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          BASE_REF: main
           ALREADY_BUMPED: ${{ steps.semver.outputs.already_bumped }}
         run: |
           set -euo pipefail
@@ -189,16 +170,10 @@ jobs:
             git push origin "refs/tags/${NEXT_VERSION}"
           fi
 
-          if ! gh release view "${NEXT_VERSION}" >/dev/null 2>&1; then
-            gh release create "${NEXT_VERSION}" --title "Orvia ${NEXT_VERSION}" --generate-notes
-          fi
-
-      # GITHUB_TOKEN não dispara o evento release:published; disparamos o upload manualmente.
-      - name: Trigger release asset build/upload
+      - name: Build assets and publish release
         if: steps.semver.outputs.should_release == 'true'
         env:
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NEXT_VERSION: ${{ steps.semver.outputs.next_version }}
         run: |
-          gh workflow run release-assets.yml --ref "${BASE_REF}" -f release_tag="${NEXT_VERSION}"
+          gh workflow run release-assets.yml --ref main -f release_tag="${NEXT_VERSION}"
