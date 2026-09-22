@@ -15,7 +15,7 @@ permissions:
 jobs:
   release-on-merge:
     if: github.event.pull_request.merged == true && (github.event.pull_request.base.ref == 'main' || github.event.pull_request.base.ref == 'master') && github.event.pull_request.head.ref == 'dev'
-    runs-on: macos-15
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
@@ -40,7 +40,7 @@ jobs:
           current_version="$(./Scripts/version.sh read)"
           current_build="$(./Scripts/version.sh read-build)"
 
-          latest_tag="$(git tag --sort=-version:refname | head -n 1 || true)"
+          latest_tag="$(git tag --list | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
           latest_version=""
           if [[ -n "${latest_tag}" ]]; then
             latest_version="${latest_tag#v}"
@@ -118,6 +118,24 @@ jobs:
         if: steps.semver.outputs.should_release != 'true'
         run: echo "Sem release para este merge."
 
+      - name: Check distribution credentials
+        if: steps.semver.outputs.should_release == 'true'
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          SIGNING_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          for name in CERTIFICATE_BASE64 CERTIFICATE_PASSWORD SIGNING_IDENTITY APPLE_ID APPLE_APP_PASSWORD APPLE_TEAM_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing distribution secret: ${name}" >&2
+              exit 1
+            fi
+          done
+
       - name: Set git identity
         if: steps.semver.outputs.should_release == 'true'
         run: |
@@ -141,7 +159,7 @@ jobs:
           NEXT_BUILD: ${{ steps.semver.outputs.next_build }}
         run: |
           set -euo pipefail
-          git add project.yml ClipFlow.xcodeproj/project.pbxproj
+          git add project.yml Orvia.xcodeproj/project.pbxproj
           git commit -m "chore(release): ${NEXT_VERSION} (build ${NEXT_BUILD}) [skip ci]"
           git push origin "${BASE_REF}"
 
@@ -172,7 +190,7 @@ jobs:
           fi
 
           if ! gh release view "${NEXT_VERSION}" >/dev/null 2>&1; then
-            gh release create "${NEXT_VERSION}" --title "ClipFlow ${NEXT_VERSION}" --generate-notes
+            gh release create "${NEXT_VERSION}" --title "Orvia ${NEXT_VERSION}" --generate-notes
           fi
 
       # GITHUB_TOKEN não dispara o evento release:published; disparamos o upload manualmente.

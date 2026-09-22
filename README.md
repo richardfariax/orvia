@@ -1,147 +1,98 @@
 <p align="center">
-  <img src="ClipFlow/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="ClipFlow logo" width="110">
+  <img src="Orvia/Resources/Assets.xcassets/AppIcon.appiconset/icon_256x256.png" alt="Ícone do Orvia" width="100">
 </p>
 
-<h1 align="center">ClipFlow</h1>
+<h1 align="center">Orvia</h1>
+
+<p align="center"><strong>Seu Mac, em um lugar só.</strong><br>
+Clipboard, voz, desempenho e cuidado em um aplicativo nativo para macOS.</p>
 
 <p align="center">
-  Premium clipboard manager for macOS.<br>
-  Fast, minimal, native, and built for daily professional workflows.
+  <a href="#conheça-o-orvia">Conheça o app</a> ·
+  <a href="#como-instalar">Como instalar</a> ·
+  <a href="#privacidade-e-permissões">Privacidade</a> ·
+  <a href="#para-desenvolvedores">Desenvolvimento</a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/richardfariax/clip-flow/releases/latest"><img alt="Download" src="https://img.shields.io/badge/Download-macOS%20DMG-0A84FF?style=for-the-badge"></a>
-  <img alt="Platform" src="https://img.shields.io/badge/platform-macOS%2014%2B-1f2937?style=for-the-badge">
-  <img alt="Built with" src="https://img.shields.io/badge/SwiftUI%20%2B%20AppKit-Native-111827?style=for-the-badge">
-</p>
+> **Versão do código: 4.1.0 (build 20).** Esta versão está pronta para compilar neste repositório. A [página de releases](https://github.com/richardfariax/clip-flow/releases) pode exibir uma versão anterior até a publicação da tag `4.1.0`.
 
-## Why ClipFlow
+![Central do Orvia com métricas ao vivo do Mac](docs/screenshots/central.jpg)
 
-ClipFlow gives you a `Windows + V` style clipboard history experience on macOS, with a polished floating panel, global hotkey access, and local-first privacy.
+## Conheça o Orvia
 
-## Highlights
+O Orvia coloca as tarefas que você consulta ao longo do dia na mesma janela. Abra a **Central** para ver o estado do Mac; use o **Clipboard** para recuperar o que copiou; fale com o assistente; e entre em **Cuidado** para analisar espaço, limpeza e aplicativos. As mesmas áreas usam navegação e superfícies consistentes, com o visual translúcido do macOS onde ele ajuda a leitura.
 
-- Global hotkey to open the clipboard panel (`Option + V` by default)
-- Preset shortcuts and custom shortcut recorder in Settings
-- Clipboard history for text and images
-- Search, favorite, pin, delete, and clear all
-- Quick filters: All, Favorites, Pinned, Text, and Images
-- Source app label on each clipboard record (when available)
-- Filtered/total counter in panel header
-- Selection auto-scroll while navigating with keyboard (`↑` and `↓`)
-- Keyboard power actions inside panel:
-  - `⌘1..⌘5` switch filters
-  - `⌘D` favorite selected item
-  - `⌘P` pin selected item
-  - `⌘C` copy selected item back to clipboard
-- Voice assistant with two activation modes:
-  - Hotkey (`⌥⇧V`, default): mic turns on only while you speak — the macOS mic indicator stays off otherwise
-  - Always listening with wake word (default `clipe`)
-- Assistant commands: "que horas são", "que dia é hoje", "quantos graus agora" (free wttr.in, no API key), "abra o site github.com", "pesquise <termo>"
-- Spoken responses via native macOS text-to-speech (offline) + system sound feedback — both optional
-- Voice commands via native on-device speech recognition:
-  - "clipe, abra o Xcode" / "clipe, open Xcode"
-  - "clipe, tire um print" (full screen or area) — saved straight to history
-  - "clipe, cole o item 2", "clipe, cole o último", "clipe, copie o item 3"
-  - "clipe, digite <texto>" (voice dictation into the focused app)
-  - "clipe, salve como deploy" / "clipe, cole o snippet deploy"
-  - "clipe, formate o json", "clipe, limpar histórico", "clipe, pausar monitoramento"
-  - Animated on-screen HUD with live transcript and command feedback
-- Developer productivity tools:
-  - Transform & copy from any card: format/minify JSON, Base64 encode/decode, camelCase/snake_case, UPPER/lower, trim
-  - Smart content detection: JSON, hex colors, and hashes get their own icons
-  - Named snippets (voice or context menu) with a dedicated Snippets filter (`⌘6`)
-  - Sequential paste stack: queue items (`⌘S` or context menu) and paste them one by one
-- Automatic paste back to the previously focused app
-- Ignored app list for sensitive software (password managers, etc.)
-- Optional local AES-GCM encryption
-- Menu bar native app with light/dark support
-- Launch at Login support
-- Native Mac Command Center with live CPU, GPU, unified memory, thermal, storage/I/O, network, and power metrics
-- Configurable menu-bar items in number, graph, or combined styles
-- Native floating dashboard from any menu-bar metric, with Quick and Detailed modes
-- Individual Apple Silicon thermal sensors grouped by component, with live temperature, hardware ID, and per-sensor history
-- Battery level, charging state, power draw, health, and cycle count when exposed by the hardware
-- Recoverable cache and Xcode DerivedData cleanup, plus honest memory-pressure guidance without terminating processes
-- Capability-aware sensor collection: unavailable readings are reported explicitly
+### Clipboard que acompanha seu ritmo
 
-## Install (for end users)
+Busque texto e imagens copiados, fixe itens importantes, salve snippets e monte uma pilha de colagem. O painel rápido abre com `⌥V`. Com a permissão de Acessibilidade, `Enter` cola no aplicativo anterior; sem ela, o item fica pronto para `⌘V`.
 
-### One-line install
+![Clipboard do Orvia com busca, filtros e ações](docs/screenshots/clipboard.jpg)
+
+### Voz no seu idioma
+
+Acione por `⌥⇧V` ou ative uma palavra de chamada opcional. O reconhecimento usa o Speech do macOS e prefere processamento no dispositivo quando disponível. As respostas faladas usam uma voz instalada no sistema. O modo de palavra de chamada mantém o microfone ativo enquanto espera o comando; o macOS mostra seu indicador de uso.
+
+![Configurações de voz do Orvia](docs/screenshots/voz.jpg)
+
+### Cuidado, com revisão antes de agir
+
+**Limpeza**, **Armazenamento** e **Apps e inicialização** vivem na mesma área. O Orvia analisa caches, logs e outros arquivos temporários por origem. Você escolhe o que mover para a Lixeira; arquivos pessoais e duplicatas exigem revisão individual.
+
+![Análise de limpeza agrupada por origem](docs/screenshots/limpeza.jpg)
+
+Veja pastas maiores, arquivos grandes e duplicatas exatas sem remover nada automaticamente.
+
+![Ferramentas de análise de armazenamento](docs/screenshots/armazenamento.jpg)
+
+Revise o tamanho dos aplicativos instalados e os itens de inicialização em uma única tela.
+
+![Aplicativos e itens de inicialização](docs/screenshots/apps.jpg)
+
+### Métricas sempre à vista
+
+CPU, memória e temperatura podem aparecer lado a lado com seus próprios ícones na barra superior. Escolha até três indicadores e sua ordem em uma prévia ao vivo. Um clique no conjunto abre o mesmo painel rápido do Orvia. A Central também mostra GPU, armazenamento, rede, sensores térmicos e ventoinhas conforme a disponibilidade do Mac; leituras ausentes aparecem como indisponíveis.
+
+![Prévia e personalização dos indicadores da barra superior](docs/screenshots/barra-superior.jpg)
+
+## Como instalar
+
+**Requisitos:** Mac com Apple Silicon e macOS 27 ou posterior. Para compilar, use Xcode 27 e [XcodeGen](https://github.com/yonaskolb/XcodeGen).
+
+Para experimentar o código 4.1.0 agora:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/richardfariax/clip-flow/main/Scripts/install.sh | bash
+xcodegen generate
+xcodebuild -project Orvia.xcodeproj -scheme Orvia -configuration Release -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
 ```
 
-This installs `ClipFlow.app` to `~/Applications` to avoid admin password prompts.
+`Scripts/release.sh` gera um ZIP local e `Scripts/release_dmg.sh` gera um DMG local em `build/`. Esses artefatos locais não são assinados nem notarizados. Para uma versão publicada e assinada, acompanhe os [releases](https://github.com/richardfariax/clip-flow/releases). O [cask Homebrew deste repositório](Casks/orvia.rb) aponta para o DMG da release mais recente; use-o após a publicação do `Orvia.dmg`.
 
-### Homebrew short command
+## Privacidade e permissões
 
-One-time setup:
+- Histórico e métricas ficam no Mac. A criptografia AES-GCM local é opcional; a chave fica no Keychain. Conteúdo que o sistema marca como privado ou transitório não entra no histórico.
+- O Orvia pede permissões conforme a função usada: **Acessibilidade** para colagem automática; **Microfone** e **Reconhecimento de Fala** para voz; **Gravação de Tela** para recursos que analisam ou capturam a tela. Os atalhos globais não exigem Input Monitoring.
+- A síntese de fala usa o macOS. Algumas consultas opcionais, como busca na web e clima, acessam a internet quando você as aciona.
+- Ao migrar do app anterior, preferências compatíveis e a base SwiftData são copiadas uma vez. Os dados de origem permanecem para recuperação; o novo histórico fica em `~/Library/Application Support/Orvia/clipboard.store`.
+
+## Para desenvolvedores
+
+`project.yml` é a fonte do projeto Xcode. O código organiza ciclo de vida em `App`, modelos e serviços em `Core`, e interface SwiftUI/AppKit em `UI`. Monitores de métricas e clipboard pertencem ao ciclo de vida do app, inclusive quando a janela está fechada.
 
 ```bash
-brew tap richardfariax/clip-flow https://github.com/richardfariax/clip-flow
+./Scripts/version.sh check
+xcodebuild -project Orvia.xcodeproj -scheme Orvia -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO test
 ```
 
-Then install with the short command:
+`Scripts/generate_brand_assets.py` reproduz os ícones a partir do master em `Orvia/Resources/Brand`. O workflow de publicação compila, assina e notariza os artefatos quando os segredos de distribuição da Apple estão configurados.
 
-```bash
-brew install --cask --appdir="$HOME/Applications" clipflow
-```
+<details>
+<summary>Problemas comuns</summary>
 
-### Homebrew (direct cask URL, no tap)
+- **A colagem apenas copia o item:** conceda Acessibilidade em Permissões e, enquanto isso, use `⌘V`.
+- **Voz indisponível:** verifique Microfone, Reconhecimento de Fala e o idioma configurado.
+- **Sensor sem leitura:** a disponibilidade depende do modelo e das APIs do macOS.
+- **Histórico anterior ausente:** confira `~/Library/Application Support/default.store` e `~/Library/Application Support/Orvia/clipboard.store`. A migração preserva a base de origem.
 
-```bash
-brew install --cask --appdir="$HOME/Applications" \
-  https://raw.githubusercontent.com/richardfariax/clip-flow/main/Casks/clipflow.rb
-```
+</details>
 
-Or run locally:
-
-```bash
-./Scripts/install_via_brew.sh
-```
-
-### DMG (manual)
-
-1. Open [latest release](https://github.com/richardfariax/clip-flow/releases/latest).
-2. Download `ClipFlow.dmg`.
-3. Drag `ClipFlow.app` to `/Applications`.
-4. Open ClipFlow and grant requested permissions.
-
-Notes:
-
-- If you install to `/Applications`, macOS may request admin password.
-- If you install to `~/Applications`, admin password is usually not required.
-
-## Permissions
-
-ClipFlow may request:
-
-- Accessibility: required for automatic paste simulation (`Cmd + V`)
-- Input Monitoring: improves reliability for global hotkeys
-- Microphone + Speech Recognition: required only if you enable voice commands (recognition runs on-device when available)
-- Screen Recording: required for voice-triggered screenshots
-
-These permission dialogs are controlled by macOS security and cannot be bypassed by the installer.
-
-## For maintainers
-
-```bash
-./Scripts/version.sh status   # project.yml ↔ pbxproj ↔ git tag
-./Scripts/version.sh bump 2.1.0
-./Scripts/release.sh && ./Scripts/release_dmg.sh
-```
-
-Releases: merge `dev` → `main` runs semver (`feat`/`fix`/`feat!:`), tags, and uploads DMG/ZIP. Manual assets: `.github/workflows/release-assets.yml`. Cask: `Casks/clipflow.rb`.
-
-## Privacy
-
-ClipFlow stores data locally on your Mac.
-No cloud sync is enabled by default.
-
-## Credits
-
-Developed by Richard Farias
-
-- LinkedIn: https://www.linkedin.com/in/richardfariasss/
+Desenvolvido por Richard Farias.

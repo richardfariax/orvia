@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build-and-upload:
-    runs-on: macos-15
+    runs-on: xcode-27
 
     steps:
       - name: Resolve checkout ref
@@ -29,7 +29,7 @@ jobs:
             echo "Erro: nenhuma tag foi informada." >&2
             exit 1
           fi
-          # Tags do ClipFlow usam X.Y.Z (sem prefixo v).
+          # Tags do Orvia usam X.Y.Z (sem prefixo v).
           tag="${RAW_TAG#v}"
           echo "checkout_ref=${tag}" >> "${GITHUB_OUTPUT}"
           echo "raw_tag=${RAW_TAG}" >> "${GITHUB_OUTPUT}"
@@ -40,11 +40,6 @@ jobs:
         with:
           ref: ${{ steps.ref.outputs.checkout_ref }}
           fetch-depth: 0
-
-      - name: Select Xcode (latest stable)
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: latest-stable
 
       - name: Show Xcode version
         run: xcodebuild -version
@@ -58,14 +53,94 @@ jobs:
           ./Scripts/version.sh check
           ./Scripts/version.sh compare-tag "${RAW_TAG}"
 
+      - name: Check distribution credentials
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+          SIGNING_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          for name in CERTIFICATE_BASE64 CERTIFICATE_PASSWORD SIGNING_IDENTITY APPLE_ID APPLE_APP_PASSWORD APPLE_TEAM_ID; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing distribution secret: ${name}" >&2
+              exit 1
+            fi
+          done
+
+      - name: Import Developer ID certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD }}
+        run: |
+          set -euo pipefail
+          certificate_path="${RUNNER_TEMP}/orvia-certificate.p12"
+          keychain_path="${RUNNER_TEMP}/orvia-signing.keychain-db"
+          keychain_password="$(openssl rand -hex 24)"
+          printf '%s' "${CERTIFICATE_BASE64}" | base64 -D > "${certificate_path}"
+          security create-keychain -p "${keychain_password}" "${keychain_path}"
+          security set-keychain-settings -lut 21600 "${keychain_path}"
+          security unlock-keychain -p "${keychain_password}" "${keychain_path}"
+          security import "${certificate_path}" -k "${keychain_path}" -P "${CERTIFICATE_PASSWORD}" -T /usr/bin/codesign
+          security list-keychains -d user -s "${keychain_path}"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "${keychain_password}" "${keychain_path}"
+          rm -f "${certificate_path}"
+
+      - name: Test
+        run: |
+          xcodebuild test -project Orvia.xcodeproj -scheme Orvia \
+            -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO -quiet
+
       - name: Build release artifacts
         run: |
           ./Scripts/release.sh
+
+      - name: Sign and notarize app
+        env:
+          SIGNING_IDENTITY: ${{ secrets.APPLE_DEVELOPER_ID_APPLICATION }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          app="build/Orvia.xcarchive/Products/Applications/Orvia.app"
+          codesign --force --options runtime --timestamp \
+            --entitlements Orvia/Resources/Orvia.entitlements \
+            --sign "${SIGNING_IDENTITY}" "${app}"
+          codesign --verify --deep --strict --verbose=2 "${app}"
+          ditto -c -k --sequesterRsrc --keepParent "${app}" build/Orvia.zip
+          xcrun notarytool submit build/Orvia.zip \
+            --apple-id "${APPLE_ID}" \
+            --password "${APPLE_APP_PASSWORD}" \
+            --team-id "${APPLE_TEAM_ID}" \
+            --wait --output-format json | /usr/bin/python3 -c \
+              'import json,sys; result=json.load(sys.stdin); print(result["status"]); sys.exit(result["status"] != "Accepted")'
+          xcrun stapler staple "${app}"
+          spctl --assess --type execute --verbose=2 "${app}"
+          ditto -c -k --sequesterRsrc --keepParent "${app}" build/Orvia.zip
+          shasum -a 256 build/Orvia.zip > build/Orvia.zip.sha256
+
+      - name: Build and notarize DMG
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
           ./Scripts/release_dmg.sh
+          xcrun notarytool submit build/Orvia.dmg \
+            --apple-id "${APPLE_ID}" \
+            --password "${APPLE_APP_PASSWORD}" \
+            --team-id "${APPLE_TEAM_ID}" \
+            --wait --output-format json | /usr/bin/python3 -c \
+              'import json,sys; result=json.load(sys.stdin); print(result["status"]); sys.exit(result["status"] != "Accepted")'
+          xcrun stapler staple build/Orvia.dmg
+          shasum -a 256 build/Orvia.dmg > build/Orvia.dmg.sha256
 
       - name: Verify built app version
         run: |
-          ./Scripts/version.sh verify-app "build/ClipFlow.xcarchive/Products/Applications/ClipFlow.app"
+          ./Scripts/version.sh verify-app "build/Orvia.xcarchive/Products/Applications/Orvia.app"
 
       - name: Resolve target release tag
         id: resolve_tag
@@ -136,8 +211,8 @@ jobs:
           TAG_NAME: ${{ steps.resolve_tag.outputs.resolved_tag }}
         run: |
           gh release upload "$TAG_NAME" \
-            build/ClipFlow.dmg \
-            build/ClipFlow.dmg.sha256 \
-            build/ClipFlow.zip \
-            build/ClipFlow.zip.sha256 \
+            build/Orvia.dmg \
+            build/Orvia.dmg.sha256 \
+            build/Orvia.zip \
+            build/Orvia.zip.sha256 \
             --clobber

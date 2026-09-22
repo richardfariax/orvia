@@ -1,0 +1,837 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01C17B50C5D3DC644B4E326E /* MetricsPopoverController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7398F1F4C2B727BB70501485 /* MetricsPopoverController.swift */; };
+		02C27CB75EDE101E8440BB9A /* VoiceCommandParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D067B4E4E54AAAA56229B6 /* VoiceCommandParser.swift */; };
+		047AD18ABF8989AA0AFF5531 /* ClipboardCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9EF47EF54588330B2B178F7 /* ClipboardCardView.swift */; };
+		083F07FD69AE640C0AEF5FA6 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DB87C9DFA3D4530EC4C092E /* SettingsView.swift */; };
+		1393B4E03B006AEFE8348D36 /* VoiceFieldView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4408C2E0A3FD2C102E1B94C /* VoiceFieldView.swift */; };
+		13D2D988B562BC8FB3614755 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D2BF7C6C65213581FA92A80 /* Assets.xcassets */; };
+		14C36B2D09F4FA2C0F9FAB6E /* AssistantIntentDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50A6E5D03F8218A5A4C8EA6 /* AssistantIntentDetector.swift */; };
+		16585C2275CC5717F9C1ACF7 /* ClipboardPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D87E843B163F854CF3A4F7B /* ClipboardPanelViewModel.swift */; };
+		1B2E789DE6DA9AE95A61232C /* ClipboardTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07EF66C5C7C52A639F289EB2 /* ClipboardTypes.swift */; };
+		1FE99949D7BD870922E6DB74 /* AppUpdateModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8EA23CE0151BFC50EB3AEB4 /* AppUpdateModels.swift */; };
+		234D79A43A79B47EF561F3F2 /* JunkScanService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941ACC31EE6F1A0B7AF8F001 /* JunkScanService.swift */; };
+		24E55154D3A9DF5D5EEE9039 /* CleanSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 079009C45300F2BB3BF860D4 /* CleanSupport.swift */; };
+		26F9A444B6C2ECC0C6051A98 /* LegacyMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3895933A3725DA89D9B5C8B /* LegacyMigrationTests.swift */; };
+		295BCC1CBC13A232604A934B /* ThermalMetricsSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702DA81E41AB5C86E440B6EA /* ThermalMetricsSampler.swift */; };
+		359669A757E6B8CD5882B208 /* TextTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30F00DC62409CE1303368C8 /* TextTransformer.swift */; };
+		364474D420591686796B2145 /* SpokenResponseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19E6C7D4FD632B6BF7D5933 /* SpokenResponseService.swift */; };
+		3D9C7EC2FD4BFBEB1AFAB39F /* ClipboardStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B715474D7CDFC9913CA6F16E /* ClipboardStorageService.swift */; };
+		3F99EEBEAF5A66FB1CA29999 /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530E8780A689E9CF52CDA2F6 /* NotificationNames.swift */; };
+		431FE99F7BA9722E7285DE3F /* LocalCryptoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D487AB562842F85441B0586 /* LocalCryptoService.swift */; };
+		478853949A0537F693FF8854 /* SystemMetricsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D54265CE790DD175D5CB62F /* SystemMetricsModels.swift */; };
+		4DDC7C582D3D26043EC12C4A /* ClipboardItemEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE04C42D73E5DD8CA186847 /* ClipboardItemEntity.swift */; };
+		54024E9476BB1C190645E479 /* DuplicateFinderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DD5C813A592DC378B686EB /* DuplicateFinderService.swift */; };
+		55D080A09D0238EA3AA2CC0E /* ClipboardContentClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 830AC7EF0D8C9DDF5337A42C /* ClipboardContentClassifierTests.swift */; };
+		5655FBE97F88A838796D3AE1 /* TextTransformerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E45E8490CCA21909FE5FF585 /* TextTransformerTests.swift */; };
+		58848F1B8D0E1FD63CB1C7AC /* ScreenAnalysisService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0832BA45DE2E837F41125CE /* ScreenAnalysisService.swift */; };
+		5EBFF9E190F7EA9A8C48A98A /* ClipboardMonitorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF088DE9F5B893372448ABDB /* ClipboardMonitorService.swift */; };
+		61B406E7AE292C08BF92EC19 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33161B39340B1D241CC54443 /* PermissionsView.swift */; };
+		61CC609FF636F8E398A064B2 /* AppUpdateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF919B7749B5377D4107719 /* AppUpdateService.swift */; };
+		626C041937763404A413991B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9E6E3443B21C0D6BA3A721 /* AppDelegate.swift */; };
+		67CE469D4F42DEAE02A52383 /* FanMetricsSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF0D383D4E6191EDEF5F8C21 /* FanMetricsSampler.swift */; };
+		75DF6FDD8A28C0608F0E16C4 /* orvia-master.png in Resources */ = {isa = PBXBuildFile; fileRef = 4A3289FCB8B15EB08728DA7B /* orvia-master.png */; };
+		78B789F18EB0938B01CA16FD /* BrandLogoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B9F063ECC02CC468A2894B /* BrandLogoView.swift */; };
+		7A7E152D97A35F3920E6DAAC /* StartupItemsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EF26A2B794EF710DA7B00CD /* StartupItemsService.swift */; };
+		7D384F267DD60EBBB942ED9B /* MenuBarPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F4076EB53DBEE4BC4D78385 /* MenuBarPopoverView.swift */; };
+		7DBF97952F9F5E56B111CCB7 /* OrviaSurfaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = B171D052E7C3DDA77525EDA4 /* OrviaSurfaces.swift */; };
+		825C3833EC45C7654490227F /* SystemMetricsSamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 801CFDDB27806177964F7DB8 /* SystemMetricsSamplerTests.swift */; };
+		884669548CC90A1AAD9BEB82 /* DiskMapService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB53087A0CAFDC172BFF2A9 /* DiskMapService.swift */; };
+		8D7584B29779AFCD71FBD676 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5E624994D792908933D8B853 /* PrivacyInfo.xcprivacy */; };
+		923BC05160F2F35108101D27 /* OrviaAssistantIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133F9DB73889C16508327A64 /* OrviaAssistantIdentity.swift */; };
+		9E232525C246862B7FDA5216 /* AppVersionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5D5E23D40EEF19EC009A23F /* AppVersionTests.swift */; };
+		A08BB93264BAFD579CAEAFA7 /* AppUpdatePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2EFCDCA6B6B21464B4F765 /* AppUpdatePanel.swift */; };
+		A994E0171B360412DBA6CB6A /* VoiceCommandExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE86EB9E5CA254F85D6BE4F5 /* VoiceCommandExecutor.swift */; };
+		AB27C02F11CB1CFD98A0095A /* QuestionPreprocessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E3DCF4E60243CC23D1A25CE /* QuestionPreprocessor.swift */; };
+		AD9588E8261A0AA154D8B301 /* MenuBarSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DEA9B62124165AC7ACBF7EB /* MenuBarSettingsView.swift */; };
+		AF987456EF449F2DF8640567 /* LaunchAtLoginManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130B6FE4C1D3E1926133C8F3 /* LaunchAtLoginManager.swift */; };
+		AFB9FDB9C7014D7F99FD4948 /* ActivityMonitorLauncher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5468843DA01CA8C350D6D9F /* ActivityMonitorLauncher.swift */; };
+		AFD306A41DE64D4A1B0C2CA3 /* KnowledgeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 808111EF101BF65353684A76 /* KnowledgeService.swift */; };
+		B2CB039D4597F8CFEA9BCB72 /* ClipboardReliabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25B11A83512CE646CEAFC18 /* ClipboardReliabilityTests.swift */; };
+		B35F93B56853B2C3E2289F73 /* VoiceCommandParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E6639B7FBA53ED2EF166527 /* VoiceCommandParserTests.swift */; };
+		B372A160583CF167B91F1F90 /* ClipboardPanelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E0411957552F61B7FD25A89 /* ClipboardPanelController.swift */; };
+		B3B708AFA2B2F43F8677A75C /* ClipboardContentClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A2ABF79E29ED5D5F350C31 /* ClipboardContentClassifier.swift */; };
+		BA18B25C0A609463DE49A64D /* PermissionsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2332D08C8FE7B8F1FD3CC23 /* PermissionsManager.swift */; };
+		BA63DB9FC247462A574E6250 /* SystemKeySimulator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 628CD6A5D3DB02F8C77C2B4A /* SystemKeySimulator.swift */; };
+		BED784089280049D3C037FED /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6B53DFA069B6710086477C /* KeychainHelper.swift */; };
+		C09558A4ECFCB7DF97DE0494 /* SystemDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A596C2119D002FB8EDD2731 /* SystemDashboardView.swift */; };
+		C1C1B4D68F013A9BEE44E724 /* CleanCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD72AB9571B32F79E51ACDE5 /* CleanCenterView.swift */; };
+		C3A2882B0933ED77C7040673 /* PasteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FE4242E7C54BE23615FE1E /* PasteService.swift */; };
+		C5B17D587B55B56D648217FE /* MetricsPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10AD133CCC9B9BF065CF606D /* MetricsPopoverView.swift */; };
+		CB5CC7124E48EFCC6D12EBB4 /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1776FE909EADA7187A2CFEF3 /* AppVersion.swift */; };
+		CBB9BA93D5A0334F162F2AA2 /* LegacyMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72E53A0AD1FA9A54D47D8165 /* LegacyMigration.swift */; };
+		CCF1F6E213725A0CD47062AF /* ClipboardPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB1667CB96CD7D141913A401 /* ClipboardPanelView.swift */; };
+		CD9F8D8068BCCC149ADB7801 /* SystemMetricsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F02E9065B77FE26377CAE18 /* SystemMetricsService.swift */; };
+		D8FE127A5E333AC00960C5EA /* MenuBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B3E08747D1CA8992F073D14 /* MenuBarController.swift */; };
+		DA695FD2BB088746D6BC3F93 /* VoiceCommandService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3C1B5ACDA9C9E50449CB1B /* VoiceCommandService.swift */; };
+		DEAA44D614669ADC1A018080 /* WebSnippetSearchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 204745096B43DED8EE3A5BA5 /* WebSnippetSearchService.swift */; };
+		DEB9DC9AD98117937CEB9519 /* DeveloperProfileCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A02F772E48F123AA6092D57 /* DeveloperProfileCatalog.swift */; };
+		E1F10A3AF839DAA8EFB7FEC8 /* CleanupRuleCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD3092F2D8A5B0D90418183 /* CleanupRuleCatalog.swift */; };
+		E74CE466D1D5C8A982209864 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFEB7D25158F740558E70FAF /* AppSettings.swift */; };
+		E79FC8A3D2605C9AA8125B25 /* SystemMetricsSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EC96B99BC6D6656369B210F /* SystemMetricsSampler.swift */; };
+		E908F93D593FC2F29010A174 /* VoiceCommandCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35DC53C7040475924CF80C0B /* VoiceCommandCatalog.swift */; };
+		EB014E7196EB6E53D455C0F7 /* HotkeySupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5582D3992CCE5AFB498F3266 /* HotkeySupport.swift */; };
+		ED19B5AB43DFCF39350AE3F3 /* VoiceHUDController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47ED49A52BB8FA1FE2602148 /* VoiceHUDController.swift */; };
+		F35854F70D82781129C823CB /* OrviaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F811FEF84F2E8103E74232E6 /* OrviaApp.swift */; };
+		F4A9A95CDD7258A6DA14ED6C /* GenerativeAnswerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4ACEB66C7DF30685561F8A8 /* GenerativeAnswerService.swift */; };
+		F5AAACCF5913BE2F72D447C4 /* LargeOldFilesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC8741F64D1B94867F91FBC9 /* LargeOldFilesService.swift */; };
+		F7BD7640404775C60B8EC254 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2634AB0ECE173512954F360E /* HotkeyManager.swift */; };
+		F882A3F72CED3C4D35ECB06F /* CleanerSafetyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C001D6EBBB1F4465BB19C5E9 /* CleanerSafetyTests.swift */; };
+		FB3582088B855C1F34D899F8 /* AppInventoryService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6B200510740B67A10BDF007 /* AppInventoryService.swift */; };
+		FDF90546D1A832992B55E85B /* ScreenshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBE8B9B17C523E8526A254A4 /* ScreenshotService.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		6BA3BBB47CFAFD2A5BF62519 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EE12A4A65DBA08C361220100 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 199CFAD754D4C7D5C522AA26;
+			remoteInfo = Orvia;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		04FE4242E7C54BE23615FE1E /* PasteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PasteService.swift; sourceTree = "<group>"; };
+		079009C45300F2BB3BF860D4 /* CleanSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanSupport.swift; sourceTree = "<group>"; };
+		07EF66C5C7C52A639F289EB2 /* ClipboardTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardTypes.swift; sourceTree = "<group>"; };
+		0D2BF7C6C65213581FA92A80 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		10AD133CCC9B9BF065CF606D /* MetricsPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsPopoverView.swift; sourceTree = "<group>"; };
+		130B6FE4C1D3E1926133C8F3 /* LaunchAtLoginManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchAtLoginManager.swift; sourceTree = "<group>"; };
+		133F9DB73889C16508327A64 /* OrviaAssistantIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrviaAssistantIdentity.swift; sourceTree = "<group>"; };
+		1776FE909EADA7187A2CFEF3 /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
+		1D487AB562842F85441B0586 /* LocalCryptoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCryptoService.swift; sourceTree = "<group>"; };
+		1EC96B99BC6D6656369B210F /* SystemMetricsSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsSampler.swift; sourceTree = "<group>"; };
+		1F4076EB53DBEE4BC4D78385 /* MenuBarPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarPopoverView.swift; sourceTree = "<group>"; };
+		204745096B43DED8EE3A5BA5 /* WebSnippetSearchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebSnippetSearchService.swift; sourceTree = "<group>"; };
+		2634AB0ECE173512954F360E /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		2CFD34A8D22ED490A7573CFF /* Orvia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Orvia.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E0411957552F61B7FD25A89 /* ClipboardPanelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardPanelController.swift; sourceTree = "<group>"; };
+		30D067B4E4E54AAAA56229B6 /* VoiceCommandParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCommandParser.swift; sourceTree = "<group>"; };
+		33161B39340B1D241CC54443 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
+		34DD5C813A592DC378B686EB /* DuplicateFinderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateFinderService.swift; sourceTree = "<group>"; };
+		35DC53C7040475924CF80C0B /* VoiceCommandCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCommandCatalog.swift; sourceTree = "<group>"; };
+		47ED49A52BB8FA1FE2602148 /* VoiceHUDController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceHUDController.swift; sourceTree = "<group>"; };
+		4A02F772E48F123AA6092D57 /* DeveloperProfileCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperProfileCatalog.swift; sourceTree = "<group>"; };
+		4A3289FCB8B15EB08728DA7B /* orvia-master.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "orvia-master.png"; sourceTree = "<group>"; };
+		4D87E843B163F854CF3A4F7B /* ClipboardPanelViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardPanelViewModel.swift; sourceTree = "<group>"; };
+		530E8780A689E9CF52CDA2F6 /* NotificationNames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationNames.swift; sourceTree = "<group>"; };
+		5582D3992CCE5AFB498F3266 /* HotkeySupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeySupport.swift; sourceTree = "<group>"; };
+		5B3E08747D1CA8992F073D14 /* MenuBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarController.swift; sourceTree = "<group>"; };
+		5E624994D792908933D8B853 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		628CD6A5D3DB02F8C77C2B4A /* SystemKeySimulator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemKeySimulator.swift; sourceTree = "<group>"; };
+		6A13EBF57D2AA895BB2759E9 /* OrviaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrviaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		6D54265CE790DD175D5CB62F /* SystemMetricsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsModels.swift; sourceTree = "<group>"; };
+		6DB87C9DFA3D4530EC4C092E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		702DA81E41AB5C86E440B6EA /* ThermalMetricsSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThermalMetricsSampler.swift; sourceTree = "<group>"; };
+		72E53A0AD1FA9A54D47D8165 /* LegacyMigration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyMigration.swift; sourceTree = "<group>"; };
+		7398F1F4C2B727BB70501485 /* MetricsPopoverController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsPopoverController.swift; sourceTree = "<group>"; };
+		7AD3092F2D8A5B0D90418183 /* CleanupRuleCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanupRuleCatalog.swift; sourceTree = "<group>"; };
+		7E3DCF4E60243CC23D1A25CE /* QuestionPreprocessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionPreprocessor.swift; sourceTree = "<group>"; };
+		7EF26A2B794EF710DA7B00CD /* StartupItemsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartupItemsService.swift; sourceTree = "<group>"; };
+		801CFDDB27806177964F7DB8 /* SystemMetricsSamplerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsSamplerTests.swift; sourceTree = "<group>"; };
+		808111EF101BF65353684A76 /* KnowledgeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KnowledgeService.swift; sourceTree = "<group>"; };
+		830AC7EF0D8C9DDF5337A42C /* ClipboardContentClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardContentClassifierTests.swift; sourceTree = "<group>"; };
+		8B9E6E3443B21C0D6BA3A721 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8D2EFCDCA6B6B21464B4F765 /* AppUpdatePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdatePanel.swift; sourceTree = "<group>"; };
+		8DEA9B62124165AC7ACBF7EB /* MenuBarSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarSettingsView.swift; sourceTree = "<group>"; };
+		8E6639B7FBA53ED2EF166527 /* VoiceCommandParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCommandParserTests.swift; sourceTree = "<group>"; };
+		8F02E9065B77FE26377CAE18 /* SystemMetricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetricsService.swift; sourceTree = "<group>"; };
+		941ACC31EE6F1A0B7AF8F001 /* JunkScanService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JunkScanService.swift; sourceTree = "<group>"; };
+		9A596C2119D002FB8EDD2731 /* SystemDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemDashboardView.swift; sourceTree = "<group>"; };
+		A3895933A3725DA89D9B5C8B /* LegacyMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyMigrationTests.swift; sourceTree = "<group>"; };
+		A4408C2E0A3FD2C102E1B94C /* VoiceFieldView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceFieldView.swift; sourceTree = "<group>"; };
+		A8EA23CE0151BFC50EB3AEB4 /* AppUpdateModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateModels.swift; sourceTree = "<group>"; };
+		A9EF47EF54588330B2B178F7 /* ClipboardCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardCardView.swift; sourceTree = "<group>"; };
+		AC8741F64D1B94867F91FBC9 /* LargeOldFilesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeOldFilesService.swift; sourceTree = "<group>"; };
+		AD72AB9571B32F79E51ACDE5 /* CleanCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanCenterView.swift; sourceTree = "<group>"; };
+		B171D052E7C3DDA77525EDA4 /* OrviaSurfaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrviaSurfaces.swift; sourceTree = "<group>"; };
+		B50A6E5D03F8218A5A4C8EA6 /* AssistantIntentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssistantIntentDetector.swift; sourceTree = "<group>"; };
+		B715474D7CDFC9913CA6F16E /* ClipboardStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardStorageService.swift; sourceTree = "<group>"; };
+		B7B9F063ECC02CC468A2894B /* BrandLogoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandLogoView.swift; sourceTree = "<group>"; };
+		BB3C1B5ACDA9C9E50449CB1B /* VoiceCommandService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCommandService.swift; sourceTree = "<group>"; };
+		BDF919B7749B5377D4107719 /* AppUpdateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateService.swift; sourceTree = "<group>"; };
+		C001D6EBBB1F4465BB19C5E9 /* CleanerSafetyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CleanerSafetyTests.swift; sourceTree = "<group>"; };
+		CBE8B9B17C523E8526A254A4 /* ScreenshotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotService.swift; sourceTree = "<group>"; };
+		CE86EB9E5CA254F85D6BE4F5 /* VoiceCommandExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceCommandExecutor.swift; sourceTree = "<group>"; };
+		CF088DE9F5B893372448ABDB /* ClipboardMonitorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardMonitorService.swift; sourceTree = "<group>"; };
+		CF0D383D4E6191EDEF5F8C21 /* FanMetricsSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FanMetricsSampler.swift; sourceTree = "<group>"; };
+		D25B11A83512CE646CEAFC18 /* ClipboardReliabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardReliabilityTests.swift; sourceTree = "<group>"; };
+		D5468843DA01CA8C350D6D9F /* ActivityMonitorLauncher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityMonitorLauncher.swift; sourceTree = "<group>"; };
+		DBE04C42D73E5DD8CA186847 /* ClipboardItemEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItemEntity.swift; sourceTree = "<group>"; };
+		E0832BA45DE2E837F41125CE /* ScreenAnalysisService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenAnalysisService.swift; sourceTree = "<group>"; };
+		E2332D08C8FE7B8F1FD3CC23 /* PermissionsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsManager.swift; sourceTree = "<group>"; };
+		E45E8490CCA21909FE5FF585 /* TextTransformerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextTransformerTests.swift; sourceTree = "<group>"; };
+		EEB53087A0CAFDC172BFF2A9 /* DiskMapService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskMapService.swift; sourceTree = "<group>"; };
+		EFEB7D25158F740558E70FAF /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		F19E6C7D4FD632B6BF7D5933 /* SpokenResponseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpokenResponseService.swift; sourceTree = "<group>"; };
+		F30F00DC62409CE1303368C8 /* TextTransformer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextTransformer.swift; sourceTree = "<group>"; };
+		F4ACEB66C7DF30685561F8A8 /* GenerativeAnswerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerativeAnswerService.swift; sourceTree = "<group>"; };
+		F5D5E23D40EEF19EC009A23F /* AppVersionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersionTests.swift; sourceTree = "<group>"; };
+		F6B200510740B67A10BDF007 /* AppInventoryService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInventoryService.swift; sourceTree = "<group>"; };
+		F811FEF84F2E8103E74232E6 /* OrviaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrviaApp.swift; sourceTree = "<group>"; };
+		F9A2ABF79E29ED5D5F350C31 /* ClipboardContentClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardContentClassifier.swift; sourceTree = "<group>"; };
+		FB1667CB96CD7D141913A401 /* ClipboardPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardPanelView.swift; sourceTree = "<group>"; };
+		FB6B53DFA069B6710086477C /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		013A79EA72495F8ED4769CB9 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				DBE04C42D73E5DD8CA186847 /* ClipboardItemEntity.swift */,
+				07EF66C5C7C52A639F289EB2 /* ClipboardTypes.swift */,
+				4A02F772E48F123AA6092D57 /* DeveloperProfileCatalog.swift */,
+				133F9DB73889C16508327A64 /* OrviaAssistantIdentity.swift */,
+				6D54265CE790DD175D5CB62F /* SystemMetricsModels.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		013F5A188D0DC409073EE130 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2E0411957552F61B7FD25A89 /* ClipboardPanelController.swift */,
+				FB1667CB96CD7D141913A401 /* ClipboardPanelView.swift */,
+				1F4076EB53DBEE4BC4D78385 /* MenuBarPopoverView.swift */,
+				8DEA9B62124165AC7ACBF7EB /* MenuBarSettingsView.swift */,
+				10AD133CCC9B9BF065CF606D /* MetricsPopoverView.swift */,
+				33161B39340B1D241CC54443 /* PermissionsView.swift */,
+				6DB87C9DFA3D4530EC4C092E /* SettingsView.swift */,
+				9A596C2119D002FB8EDD2731 /* SystemDashboardView.swift */,
+				47ED49A52BB8FA1FE2602148 /* VoiceHUDController.swift */,
+				A6BA92DF019C2512C0BD00C5 /* Clean */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		0225A13E8F758B50362FBE8D /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				EFEB7D25158F740558E70FAF /* AppSettings.swift */,
+				2634AB0ECE173512954F360E /* HotkeyManager.swift */,
+				130B6FE4C1D3E1926133C8F3 /* LaunchAtLoginManager.swift */,
+				5B3E08747D1CA8992F073D14 /* MenuBarController.swift */,
+				7398F1F4C2B727BB70501485 /* MetricsPopoverController.swift */,
+				E2332D08C8FE7B8F1FD3CC23 /* PermissionsManager.swift */,
+			);
+			path = Managers;
+			sourceTree = "<group>";
+		};
+		449BC1C2290E991010902467 /* Orvia */ = {
+			isa = PBXGroup;
+			children = (
+				C685E03B595EBBFB051659E6 /* App */,
+				C3F60F7E4883B5E9F3F746CE /* Core */,
+				88AE8295454F2CFEEA08A725 /* Resources */,
+				AD82A6D6535D39ABA7DABCBA /* UI */,
+			);
+			path = Orvia;
+			sourceTree = "<group>";
+		};
+		4731259F0D2AAD971B1DB086 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2CFD34A8D22ED490A7573CFF /* Orvia.app */,
+				6A13EBF57D2AA895BB2759E9 /* OrviaTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		73FE66414C9D3590D7CDD61D /* OrviaTests */ = {
+			isa = PBXGroup;
+			children = (
+				F5D5E23D40EEF19EC009A23F /* AppVersionTests.swift */,
+				C001D6EBBB1F4465BB19C5E9 /* CleanerSafetyTests.swift */,
+				830AC7EF0D8C9DDF5337A42C /* ClipboardContentClassifierTests.swift */,
+				D25B11A83512CE646CEAFC18 /* ClipboardReliabilityTests.swift */,
+				A3895933A3725DA89D9B5C8B /* LegacyMigrationTests.swift */,
+				801CFDDB27806177964F7DB8 /* SystemMetricsSamplerTests.swift */,
+				E45E8490CCA21909FE5FF585 /* TextTransformerTests.swift */,
+				8E6639B7FBA53ED2EF166527 /* VoiceCommandParserTests.swift */,
+			);
+			path = OrviaTests;
+			sourceTree = "<group>";
+		};
+		795A60C230CD12C46021E2D6 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				1776FE909EADA7187A2CFEF3 /* AppVersion.swift */,
+				B50A6E5D03F8218A5A4C8EA6 /* AssistantIntentDetector.swift */,
+				F9A2ABF79E29ED5D5F350C31 /* ClipboardContentClassifier.swift */,
+				5582D3992CCE5AFB498F3266 /* HotkeySupport.swift */,
+				FB6B53DFA069B6710086477C /* KeychainHelper.swift */,
+				530E8780A689E9CF52CDA2F6 /* NotificationNames.swift */,
+				7E3DCF4E60243CC23D1A25CE /* QuestionPreprocessor.swift */,
+				628CD6A5D3DB02F8C77C2B4A /* SystemKeySimulator.swift */,
+				F30F00DC62409CE1303368C8 /* TextTransformer.swift */,
+				35DC53C7040475924CF80C0B /* VoiceCommandCatalog.swift */,
+				30D067B4E4E54AAAA56229B6 /* VoiceCommandParser.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		88AE8295454F2CFEEA08A725 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				0D2BF7C6C65213581FA92A80 /* Assets.xcassets */,
+				5E624994D792908933D8B853 /* PrivacyInfo.xcprivacy */,
+				C949BC58C515ED9801D4A2CB /* Brand */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		9A132C0413E0179E9DBB3F5C /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				4D87E843B163F854CF3A4F7B /* ClipboardPanelViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		9FD41AB952BE4E4751F64676 = {
+			isa = PBXGroup;
+			children = (
+				449BC1C2290E991010902467 /* Orvia */,
+				73FE66414C9D3590D7CDD61D /* OrviaTests */,
+				4731259F0D2AAD971B1DB086 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A6BA92DF019C2512C0BD00C5 /* Clean */ = {
+			isa = PBXGroup;
+			children = (
+				AD72AB9571B32F79E51ACDE5 /* CleanCenterView.swift */,
+			);
+			path = Clean;
+			sourceTree = "<group>";
+		};
+		AD82A6D6535D39ABA7DABCBA /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				C9BCD4BB8E501A083B71E285 /* Components */,
+				9A132C0413E0179E9DBB3F5C /* ViewModels */,
+				013F5A188D0DC409073EE130 /* Views */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		AFA7D61EC67A4E921212BEA8 /* Clean */ = {
+			isa = PBXGroup;
+			children = (
+				F6B200510740B67A10BDF007 /* AppInventoryService.swift */,
+				079009C45300F2BB3BF860D4 /* CleanSupport.swift */,
+				7AD3092F2D8A5B0D90418183 /* CleanupRuleCatalog.swift */,
+				EEB53087A0CAFDC172BFF2A9 /* DiskMapService.swift */,
+				34DD5C813A592DC378B686EB /* DuplicateFinderService.swift */,
+				941ACC31EE6F1A0B7AF8F001 /* JunkScanService.swift */,
+				AC8741F64D1B94867F91FBC9 /* LargeOldFilesService.swift */,
+				7EF26A2B794EF710DA7B00CD /* StartupItemsService.swift */,
+			);
+			path = Clean;
+			sourceTree = "<group>";
+		};
+		C3F60F7E4883B5E9F3F746CE /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				0225A13E8F758B50362FBE8D /* Managers */,
+				013A79EA72495F8ED4769CB9 /* Models */,
+				CE841E3D0477504E6AF8774A /* Services */,
+				795A60C230CD12C46021E2D6 /* Utilities */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		C685E03B595EBBFB051659E6 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				8B9E6E3443B21C0D6BA3A721 /* AppDelegate.swift */,
+				F811FEF84F2E8103E74232E6 /* OrviaApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C949BC58C515ED9801D4A2CB /* Brand */ = {
+			isa = PBXGroup;
+			children = (
+				4A3289FCB8B15EB08728DA7B /* orvia-master.png */,
+			);
+			path = Brand;
+			sourceTree = "<group>";
+		};
+		C9BCD4BB8E501A083B71E285 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				8D2EFCDCA6B6B21464B4F765 /* AppUpdatePanel.swift */,
+				B7B9F063ECC02CC468A2894B /* BrandLogoView.swift */,
+				A9EF47EF54588330B2B178F7 /* ClipboardCardView.swift */,
+				B171D052E7C3DDA77525EDA4 /* OrviaSurfaces.swift */,
+				A4408C2E0A3FD2C102E1B94C /* VoiceFieldView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		CE841E3D0477504E6AF8774A /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				D5468843DA01CA8C350D6D9F /* ActivityMonitorLauncher.swift */,
+				A8EA23CE0151BFC50EB3AEB4 /* AppUpdateModels.swift */,
+				BDF919B7749B5377D4107719 /* AppUpdateService.swift */,
+				CF088DE9F5B893372448ABDB /* ClipboardMonitorService.swift */,
+				B715474D7CDFC9913CA6F16E /* ClipboardStorageService.swift */,
+				CF0D383D4E6191EDEF5F8C21 /* FanMetricsSampler.swift */,
+				F4ACEB66C7DF30685561F8A8 /* GenerativeAnswerService.swift */,
+				808111EF101BF65353684A76 /* KnowledgeService.swift */,
+				72E53A0AD1FA9A54D47D8165 /* LegacyMigration.swift */,
+				1D487AB562842F85441B0586 /* LocalCryptoService.swift */,
+				04FE4242E7C54BE23615FE1E /* PasteService.swift */,
+				E0832BA45DE2E837F41125CE /* ScreenAnalysisService.swift */,
+				CBE8B9B17C523E8526A254A4 /* ScreenshotService.swift */,
+				F19E6C7D4FD632B6BF7D5933 /* SpokenResponseService.swift */,
+				1EC96B99BC6D6656369B210F /* SystemMetricsSampler.swift */,
+				8F02E9065B77FE26377CAE18 /* SystemMetricsService.swift */,
+				702DA81E41AB5C86E440B6EA /* ThermalMetricsSampler.swift */,
+				CE86EB9E5CA254F85D6BE4F5 /* VoiceCommandExecutor.swift */,
+				BB3C1B5ACDA9C9E50449CB1B /* VoiceCommandService.swift */,
+				204745096B43DED8EE3A5BA5 /* WebSnippetSearchService.swift */,
+				AFA7D61EC67A4E921212BEA8 /* Clean */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		199CFAD754D4C7D5C522AA26 /* Orvia */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B932E7590168F84EE0A7C68C /* Build configuration list for PBXNativeTarget "Orvia" */;
+			buildPhases = (
+				F3A31C914ED72A7CE80A532A /* Sources */,
+				70C55D7C6F1EBBFE59B19307 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Orvia;
+			packageProductDependencies = (
+			);
+			productName = Orvia;
+			productReference = 2CFD34A8D22ED490A7573CFF /* Orvia.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A548B3BFB1C601267F2EB7FE /* OrviaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A8F6E901E5DB821EC99425F /* Build configuration list for PBXNativeTarget "OrviaTests" */;
+			buildPhases = (
+				08D940A9E887B96F4860B1F6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C79FC50B95F04F803CF6F601 /* PBXTargetDependency */,
+			);
+			name = OrviaTests;
+			packageProductDependencies = (
+			);
+			productName = OrviaTests;
+			productReference = 6A13EBF57D2AA895BB2759E9 /* OrviaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		EE12A4A65DBA08C361220100 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 41ADC08B0F0BC8A58BD8A822 /* Build configuration list for PBXProject "Orvia" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 9FD41AB952BE4E4751F64676;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 4731259F0D2AAD971B1DB086 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				199CFAD754D4C7D5C522AA26 /* Orvia */,
+				A548B3BFB1C601267F2EB7FE /* OrviaTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		70C55D7C6F1EBBFE59B19307 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				13D2D988B562BC8FB3614755 /* Assets.xcassets in Resources */,
+				8D7584B29779AFCD71FBD676 /* PrivacyInfo.xcprivacy in Resources */,
+				75DF6FDD8A28C0608F0E16C4 /* orvia-master.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		08D940A9E887B96F4860B1F6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9E232525C246862B7FDA5216 /* AppVersionTests.swift in Sources */,
+				F882A3F72CED3C4D35ECB06F /* CleanerSafetyTests.swift in Sources */,
+				55D080A09D0238EA3AA2CC0E /* ClipboardContentClassifierTests.swift in Sources */,
+				B2CB039D4597F8CFEA9BCB72 /* ClipboardReliabilityTests.swift in Sources */,
+				26F9A444B6C2ECC0C6051A98 /* LegacyMigrationTests.swift in Sources */,
+				825C3833EC45C7654490227F /* SystemMetricsSamplerTests.swift in Sources */,
+				5655FBE97F88A838796D3AE1 /* TextTransformerTests.swift in Sources */,
+				B35F93B56853B2C3E2289F73 /* VoiceCommandParserTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3A31C914ED72A7CE80A532A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFB9FDB9C7014D7F99FD4948 /* ActivityMonitorLauncher.swift in Sources */,
+				626C041937763404A413991B /* AppDelegate.swift in Sources */,
+				FB3582088B855C1F34D899F8 /* AppInventoryService.swift in Sources */,
+				E74CE466D1D5C8A982209864 /* AppSettings.swift in Sources */,
+				1FE99949D7BD870922E6DB74 /* AppUpdateModels.swift in Sources */,
+				A08BB93264BAFD579CAEAFA7 /* AppUpdatePanel.swift in Sources */,
+				61CC609FF636F8E398A064B2 /* AppUpdateService.swift in Sources */,
+				CB5CC7124E48EFCC6D12EBB4 /* AppVersion.swift in Sources */,
+				14C36B2D09F4FA2C0F9FAB6E /* AssistantIntentDetector.swift in Sources */,
+				78B789F18EB0938B01CA16FD /* BrandLogoView.swift in Sources */,
+				C1C1B4D68F013A9BEE44E724 /* CleanCenterView.swift in Sources */,
+				24E55154D3A9DF5D5EEE9039 /* CleanSupport.swift in Sources */,
+				E1F10A3AF839DAA8EFB7FEC8 /* CleanupRuleCatalog.swift in Sources */,
+				047AD18ABF8989AA0AFF5531 /* ClipboardCardView.swift in Sources */,
+				B3B708AFA2B2F43F8677A75C /* ClipboardContentClassifier.swift in Sources */,
+				4DDC7C582D3D26043EC12C4A /* ClipboardItemEntity.swift in Sources */,
+				5EBFF9E190F7EA9A8C48A98A /* ClipboardMonitorService.swift in Sources */,
+				B372A160583CF167B91F1F90 /* ClipboardPanelController.swift in Sources */,
+				CCF1F6E213725A0CD47062AF /* ClipboardPanelView.swift in Sources */,
+				16585C2275CC5717F9C1ACF7 /* ClipboardPanelViewModel.swift in Sources */,
+				3D9C7EC2FD4BFBEB1AFAB39F /* ClipboardStorageService.swift in Sources */,
+				1B2E789DE6DA9AE95A61232C /* ClipboardTypes.swift in Sources */,
+				DEB9DC9AD98117937CEB9519 /* DeveloperProfileCatalog.swift in Sources */,
+				884669548CC90A1AAD9BEB82 /* DiskMapService.swift in Sources */,
+				54024E9476BB1C190645E479 /* DuplicateFinderService.swift in Sources */,
+				67CE469D4F42DEAE02A52383 /* FanMetricsSampler.swift in Sources */,
+				F4A9A95CDD7258A6DA14ED6C /* GenerativeAnswerService.swift in Sources */,
+				F7BD7640404775C60B8EC254 /* HotkeyManager.swift in Sources */,
+				EB014E7196EB6E53D455C0F7 /* HotkeySupport.swift in Sources */,
+				234D79A43A79B47EF561F3F2 /* JunkScanService.swift in Sources */,
+				BED784089280049D3C037FED /* KeychainHelper.swift in Sources */,
+				AFD306A41DE64D4A1B0C2CA3 /* KnowledgeService.swift in Sources */,
+				F5AAACCF5913BE2F72D447C4 /* LargeOldFilesService.swift in Sources */,
+				AF987456EF449F2DF8640567 /* LaunchAtLoginManager.swift in Sources */,
+				CBB9BA93D5A0334F162F2AA2 /* LegacyMigration.swift in Sources */,
+				431FE99F7BA9722E7285DE3F /* LocalCryptoService.swift in Sources */,
+				D8FE127A5E333AC00960C5EA /* MenuBarController.swift in Sources */,
+				7D384F267DD60EBBB942ED9B /* MenuBarPopoverView.swift in Sources */,
+				AD9588E8261A0AA154D8B301 /* MenuBarSettingsView.swift in Sources */,
+				01C17B50C5D3DC644B4E326E /* MetricsPopoverController.swift in Sources */,
+				C5B17D587B55B56D648217FE /* MetricsPopoverView.swift in Sources */,
+				3F99EEBEAF5A66FB1CA29999 /* NotificationNames.swift in Sources */,
+				F35854F70D82781129C823CB /* OrviaApp.swift in Sources */,
+				923BC05160F2F35108101D27 /* OrviaAssistantIdentity.swift in Sources */,
+				7DBF97952F9F5E56B111CCB7 /* OrviaSurfaces.swift in Sources */,
+				C3A2882B0933ED77C7040673 /* PasteService.swift in Sources */,
+				BA18B25C0A609463DE49A64D /* PermissionsManager.swift in Sources */,
+				61B406E7AE292C08BF92EC19 /* PermissionsView.swift in Sources */,
+				AB27C02F11CB1CFD98A0095A /* QuestionPreprocessor.swift in Sources */,
+				58848F1B8D0E1FD63CB1C7AC /* ScreenAnalysisService.swift in Sources */,
+				FDF90546D1A832992B55E85B /* ScreenshotService.swift in Sources */,
+				083F07FD69AE640C0AEF5FA6 /* SettingsView.swift in Sources */,
+				364474D420591686796B2145 /* SpokenResponseService.swift in Sources */,
+				7A7E152D97A35F3920E6DAAC /* StartupItemsService.swift in Sources */,
+				C09558A4ECFCB7DF97DE0494 /* SystemDashboardView.swift in Sources */,
+				BA63DB9FC247462A574E6250 /* SystemKeySimulator.swift in Sources */,
+				478853949A0537F693FF8854 /* SystemMetricsModels.swift in Sources */,
+				E79FC8A3D2605C9AA8125B25 /* SystemMetricsSampler.swift in Sources */,
+				CD9F8D8068BCCC149ADB7801 /* SystemMetricsService.swift in Sources */,
+				359669A757E6B8CD5882B208 /* TextTransformer.swift in Sources */,
+				295BCC1CBC13A232604A934B /* ThermalMetricsSampler.swift in Sources */,
+				E908F93D593FC2F29010A174 /* VoiceCommandCatalog.swift in Sources */,
+				A994E0171B360412DBA6CB6A /* VoiceCommandExecutor.swift in Sources */,
+				02C27CB75EDE101E8440BB9A /* VoiceCommandParser.swift in Sources */,
+				DA695FD2BB088746D6BC3F93 /* VoiceCommandService.swift in Sources */,
+				1393B4E03B006AEFE8348D36 /* VoiceFieldView.swift in Sources */,
+				ED19B5AB43DFCF39350AE3F3 /* VoiceHUDController.swift in Sources */,
+				DEAA44D614669ADC1A018080 /* WebSnippetSearchService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C79FC50B95F04F803CF6F601 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 199CFAD754D4C7D5C522AA26 /* Orvia */;
+			targetProxy = 6BA3BBB47CFAFD2A5BF62519 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		2D55A23AF32419FCE69F7C0F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.richadfarias.orvia.tests;
+				PRODUCT_NAME = OrviaTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Orvia.app/Contents/MacOS/Orvia";
+			};
+			name = Debug;
+		};
+		3C4CE25E7C2747606D5983F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Orvia/Resources/Orvia.entitlements;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 20;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Orvia/Resources/Info.plist;
+				MARKETING_VERSION = 4.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.richadfarias.orvia;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		7FB4108EEF8633D090EC7BBF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.richadfarias.orvia.tests;
+				PRODUCT_NAME = OrviaTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Orvia.app/Contents/MacOS/Orvia";
+			};
+			name = Release;
+		};
+		851AB3B3166C81B8C0CCF8EC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Orvia/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Orvia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_NAME = Orvia;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		8C54A41808DF1B0664443A37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Orvia/Resources/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Orvia;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 27.0;
+				PRODUCT_NAME = Orvia;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B81CB5EF4B0846F5B2D827DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = arm64;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = Orvia/Resources/Orvia.entitlements;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 20;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Orvia/Resources/Info.plist;
+				MARKETING_VERSION = 4.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.richadfarias.orvia;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		41ADC08B0F0BC8A58BD8A822 /* Build configuration list for PBXProject "Orvia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B81CB5EF4B0846F5B2D827DD /* Debug */,
+				3C4CE25E7C2747606D5983F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7A8F6E901E5DB821EC99425F /* Build configuration list for PBXNativeTarget "OrviaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2D55A23AF32419FCE69F7C0F /* Debug */,
+				7FB4108EEF8633D090EC7BBF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B932E7590168F84EE0A7C68C /* Build configuration list for PBXNativeTarget "Orvia" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8C54A41808DF1B0664443A37 /* Debug */,
+				851AB3B3166C81B8C0CCF8EC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = EE12A4A65DBA08C361220100 /* Project object */;
+}

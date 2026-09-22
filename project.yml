@@ -1,49 +1,60 @@
-name: ClipFlow
+name: Orvia
 options:
   createIntermediateGroups: true
 settings:
   base:
-    MARKETING_VERSION: 3.1.0
-    CURRENT_PROJECT_VERSION: 12
+    MARKETING_VERSION: 4.1.0
+    CURRENT_PROJECT_VERSION: 20
     SWIFT_VERSION: 5.0
-    PRODUCT_BUNDLE_IDENTIFIER: com.richadfarias.clipflow
-    CODE_SIGN_ENTITLEMENTS: ClipFlow/Resources/ClipFlow.entitlements
-    INFOPLIST_FILE: ClipFlow/Resources/Info.plist
+    ARCHS: arm64
+    ONLY_ACTIVE_ARCH: NO
+    ENABLE_HARDENED_RUNTIME: YES
+    PRODUCT_BUNDLE_IDENTIFIER: com.richadfarias.orvia
+    CODE_SIGN_ENTITLEMENTS: Orvia/Resources/Orvia.entitlements
+    INFOPLIST_FILE: Orvia/Resources/Info.plist
     GENERATE_INFOPLIST_FILE: NO
 targets:
-  ClipFlow:
+  Orvia:
     type: application
     platform: macOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "27.0"
     sources:
-      - path: ClipFlow/App
-      - path: ClipFlow/Core
-      - path: ClipFlow/UI
-      - path: ClipFlow/Resources
+      - path: Orvia/App
+      - path: Orvia/Core
+      - path: Orvia/UI
+      - path: Orvia/Resources
         buildPhase: resources
         excludes:
           - Info.plist
-          - ClipFlow.entitlements
+          - Orvia.entitlements
     settings:
       base:
-        PRODUCT_NAME: ClipFlow
+        PRODUCT_NAME: Orvia
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        INFOPLIST_KEY_CFBundleDisplayName: ClipFlow
+        INFOPLIST_KEY_CFBundleDisplayName: Orvia
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
 
-  ClipFlowTests:
+  OrviaTests:
     type: bundle.unit-test
     platform: macOS
-    deploymentTarget: "14.0"
+    deploymentTarget: "27.0"
     sources:
-      - path: ClipFlowTests
+      - path: OrviaTests
     dependencies:
-      - target: ClipFlow
+      - target: Orvia
     settings:
       base:
         BUNDLE_LOADER: "$(TEST_HOST)"
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/ClipFlow.app/Contents/MacOS/ClipFlow"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Orvia.app/Contents/MacOS/Orvia"
         INFOPLIST_FILE: ""
-        PRODUCT_NAME: ClipFlowTests
-        PRODUCT_BUNDLE_IDENTIFIER: com.richadfarias.clipflow.tests
+        PRODUCT_NAME: OrviaTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.richadfarias.orvia.tests
         GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Orvia:
+    build:
+      targets:
+        Orvia: all
+    test:
+      targets:
+        - OrviaTests

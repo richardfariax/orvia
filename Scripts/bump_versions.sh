@@ -22,7 +22,7 @@ fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 project_file="${ROOT}/project.yml"
-pbxproj_file="${ROOT}/ClipFlow.xcodeproj/project.pbxproj"
+pbxproj_file="${ROOT}/Orvia.xcodeproj/project.pbxproj"
 
 if [[ ! -f "${project_file}" || ! -f "${pbxproj_file}" ]]; then
   echo "Erro: arquivos de versão não encontrados." >&2
