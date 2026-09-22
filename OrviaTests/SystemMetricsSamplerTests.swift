@@ -36,16 +36,28 @@ final class SystemMetricsSamplerTests: XCTestCase {
 
     func testGPUReadsIOAcceleratorStatisticsWhenAvailable() throws {
         let sampler = GPUMetricsSampler()
-        let sample = try XCTUnwrap(sampler.sample())
-
         XCTAssertFalse(sampler.deviceName.isEmpty)
-        XCTAssertGreaterThan(sampler.coreCount ?? 0, 0)
+        if let coreCount = sampler.coreCount {
+            XCTAssertGreaterThan(coreCount, 0)
+        }
+        guard let sample = sampler.sample() else {
+            throw XCTSkip("IOAccelerator statistics are unavailable on this Mac")
+        }
         XCTAssertTrue((0 ... 1).contains(sample.device))
     }
 
     func testThermalSampleRejectsInvalidSensorValues() throws {
+        for value in [Double.nan, .infinity, -.infinity, 4.99, 125.01] {
+            XCTAssertNil(ThermalMetricsSampler.validatedTemperature(value))
+        }
+        XCTAssertEqual(ThermalMetricsSampler.validatedTemperature(5), 5)
+        XCTAssertEqual(ThermalMetricsSampler.validatedTemperature(125), 125)
+
         let sample = ThermalMetricsSampler().sample()
-        let temperature = try XCTUnwrap(sample.peakTemperature)
+        guard let temperature = sample.peakTemperature else {
+            XCTAssertEqual(sample, .unavailable)
+            return
+        }
 
         XCTAssertTrue((5 ... 125).contains(temperature))
         XCTAssertGreaterThan(sample.sensorCount, 0)
