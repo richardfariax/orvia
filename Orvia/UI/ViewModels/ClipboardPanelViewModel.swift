@@ -127,12 +127,14 @@ final class ClipboardPanelViewModel: ObservableObject {
     func paste(
         item: DecodedClipboardItem,
         targetApplication: NSRunningApplication? = nil,
+        targetFocus: PasteFocus? = nil,
         completion: ((Bool) -> Void)? = nil
     ) {
         selectedItemID = item.id
         pasteService.paste(
             item: item,
             targetApplication: targetApplication ?? targetApplicationProvider(),
+            targetFocus: targetFocus,
             completion: completion
         )
     }
@@ -367,7 +369,7 @@ final class ClipboardPanelViewModel: ObservableObject {
         self.selectedItemID = items.first?.id
     }
 
-    private var selectedItem: DecodedClipboardItem? {
+    var selectedItem: DecodedClipboardItem? {
         guard let selectedItemID else {
             return nil
         }

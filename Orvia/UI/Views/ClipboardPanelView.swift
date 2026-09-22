@@ -5,6 +5,21 @@ struct ClipboardPanelView: View {
     @ObservedObject var settings: AppSettings
     var embedded = false
     let closePanel: () -> Void
+    let onPasteItem: ((DecodedClipboardItem) -> Void)?
+
+    init(
+        viewModel: ClipboardPanelViewModel,
+        settings: AppSettings,
+        embedded: Bool = false,
+        onPasteItem: ((DecodedClipboardItem) -> Void)? = nil,
+        closePanel: @escaping () -> Void
+    ) {
+        self.viewModel = viewModel
+        self.settings = settings
+        self.embedded = embedded
+        self.onPasteItem = onPasteItem
+        self.closePanel = closePanel
+    }
 
     var body: some View {
         Group {
@@ -94,8 +109,9 @@ struct ClipboardPanelView: View {
         TextField(t("Buscar por conteúdo ou app", "Search by content or app"), text: $viewModel.searchText)
             .textFieldStyle(.roundedBorder)
             .onSubmit {
-                closePanel()
-                viewModel.pasteSelectedItem()
+                if let item = viewModel.selectedItem {
+                    paste(item)
+                }
             }
     }
 
@@ -136,8 +152,7 @@ struct ClipboardPanelView: View {
                                 isSelected: viewModel.selectedItemID == item.id,
                                 language: settings.language,
                                 onPaste: {
-                                    closePanel()
-                                    viewModel.paste(item: item)
+                                    paste(item)
                                 },
                                 onSelect: {
                                     viewModel.select(itemID: item.id)
@@ -219,6 +234,15 @@ struct ClipboardPanelView: View {
 
     private func t(_ pt: String, _ en: String) -> String {
         settings.text(ptBR: pt, en: en)
+    }
+
+    private func paste(_ item: DecodedClipboardItem) {
+        if let onPasteItem {
+            onPasteItem(item)
+        } else {
+            closePanel()
+            viewModel.paste(item: item)
+        }
     }
 
     private func promptSnippetName(for item: DecodedClipboardItem) {

@@ -42,6 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var metricsPopoverController: MetricsPopoverController?
     private var lastExternalApplication: NSRunningApplication?
     private var panelTargetApplication: NSRunningApplication?
+    private var panelTargetFocus: PasteFocus?
 
     private var settingsWindowController: NSWindowController?
 
@@ -171,7 +172,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         )
         panelViewModel = viewModel
 
-        let panelView = ClipboardPanelView(viewModel: viewModel, settings: settings) { [weak self] in
+        let panelView = ClipboardPanelView(
+            viewModel: viewModel,
+            settings: settings,
+            onPasteItem: { [weak self] item in
+                self?.pastePanelItem(item)
+            }
+        ) { [weak self] in
             self?.panelController?.close()
         }
 
@@ -181,12 +188,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.panelViewModel?.moveSelection(upward: moveUp)
             },
             onConfirmSelection: { [weak self] in
-                guard let self else { return }
-                let targetApplication = self.panelTargetApplication
-                self.panelController?.close()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) {
-                    self.panelViewModel?.pasteSelectedItem(targetApplication: targetApplication)
-                }
+                self?.pastePanelItem(self?.panelViewModel?.selectedItem)
             },
             onToggleFavoriteSelection: { [weak self] in
                 self?.panelViewModel?.toggleFavoriteForSelectedItem()
@@ -403,8 +405,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func openPanelFromExternalTrigger() {
         captureFrontmostExternalApplication()
         panelTargetApplication = lastExternalApplication
+        panelTargetFocus = PasteFocus(application: panelTargetApplication)
         panelController?.show()
         panelViewModel?.refresh()
+    }
+
+    private func pastePanelItem(_ item: DecodedClipboardItem?) {
+        guard let item else { return }
+        let targetApplication = panelTargetApplication
+        let targetFocus = panelTargetFocus
+        panelController?.close()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.03) { [weak self] in
+            self?.panelViewModel?.paste(
+                item: item, targetApplication: targetApplication, targetFocus: targetFocus
+            )
+        }
     }
 
     private func configureMenuBar() {
@@ -618,6 +633,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         captureFrontmostExternalApplication()
         panelTargetApplication = lastExternalApplication
+        panelTargetFocus = PasteFocus(application: panelTargetApplication)
         panelController?.show()
         panelViewModel?.refresh()
     }

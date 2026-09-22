@@ -1,13 +1,64 @@
 import AppKit
 import ApplicationServices
 import Foundation
+import OSLog
+
+/// O campo ativo antes de o painel do Orvia assumir o foco.
+struct PasteFocus {
+    private static let logger = Logger(subsystem: "com.richadfarias.orvia", category: "paste")
+
+    let processIdentifier: pid_t
+    private let window: AXUIElement?
+    private let element: AXUIElement?
+
+    init?(application: NSRunningApplication?) {
+        guard let application, !application.isTerminated else { return nil }
+
+        processIdentifier = application.processIdentifier
+        let accessibilityApplication = AXUIElementCreateApplication(processIdentifier)
+        window = Self.element(for: kAXFocusedWindowAttribute, in: accessibilityApplication)
+        element = Self.element(for: kAXFocusedUIElementAttribute, in: accessibilityApplication)
+    }
+
+    func restore() {
+        let accessibilityApplication = AXUIElementCreateApplication(processIdentifier)
+        if let window {
+            let result = AXUIElementSetAttributeValue(
+                accessibilityApplication, kAXFocusedWindowAttribute as CFString, window
+            )
+            if result != .success {
+                Self.logger.debug("Could not restore the target window: \(result.rawValue)")
+            }
+        }
+        if let element {
+            let result = AXUIElementSetAttributeValue(
+                element, kAXFocusedAttribute as CFString, kCFBooleanTrue
+            )
+            if result != .success {
+                Self.logger.debug("Could not restore the target field: \(result.rawValue)")
+            }
+        }
+    }
+
+    private static func element(for attribute: String, in application: AXUIElement) -> AXUIElement? {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(application, attribute as CFString, &value) == .success,
+              let value,
+              CFGetTypeID(value) == AXUIElementGetTypeID() else {
+            return nil
+        }
+        // CFTypeID foi validado acima; a ponte CoreFoundation exige o cast explícito.
+        return (value as! AXUIElement)
+    }
+}
 
 @MainActor
 final class PasteService {
+    private let logger = Logger(subsystem: "com.richadfarias.orvia", category: "paste")
     private let permissionsManager: PermissionsManager
     private let focusRetryDelay: TimeInterval = 0.07
     private let initialPasteDelay: TimeInterval = 0.14
-    private let finalActivationDelay: TimeInterval = 0.08
+    private let restoredFocusDelay: TimeInterval = 0.05
     private let maxFocusRetries: Int = 14
 
     init(permissionsManager: PermissionsManager) {
@@ -17,9 +68,12 @@ final class PasteService {
     func paste(
         item: DecodedClipboardItem,
         targetApplication: NSRunningApplication?,
+        targetFocus: PasteFocus? = nil,
         completion: ((Bool) -> Void)? = nil
     ) {
-        pastePreparingPasteboard(targetApplication: targetApplication, completion: completion) { pasteboard in
+        pastePreparingPasteboard(
+            targetApplication: targetApplication, targetFocus: targetFocus, completion: completion
+        ) { pasteboard in
             switch item.kind {
             case .text:
                 guard let text = item.text else { return false }
@@ -38,7 +92,9 @@ final class PasteService {
         targetApplication: NSRunningApplication?,
         completion: ((Bool) -> Void)? = nil
     ) {
-        pastePreparingPasteboard(targetApplication: targetApplication, completion: completion) { pasteboard in
+        pastePreparingPasteboard(
+            targetApplication: targetApplication, targetFocus: nil, completion: completion
+        ) { pasteboard in
             guard !text.isEmpty else { return false }
             pasteboard.setString(text, forType: .string)
             return true
@@ -47,6 +103,7 @@ final class PasteService {
 
     private func pastePreparingPasteboard(
         targetApplication: NSRunningApplication?,
+        targetFocus: PasteFocus?,
         completion: ((Bool) -> Void)?,
         write: (NSPasteboard) -> Bool
     ) {
@@ -69,11 +126,16 @@ final class PasteService {
         }
 
         let target = resolveTargetApplication(from: targetApplication)
-        if let target {
-            target.activate(options: [.activateAllWindows])
+        guard let target else {
+            logger.warning("Paste was copied to the clipboard because no target application was available")
+            completion?(false)
+            return
         }
+        target.activate(options: [])
 
-        pasteWithFocusRetry(targetApplication: target, attempt: 0, completion: completion)
+        pasteWithFocusRetry(
+            targetApplication: target, targetFocus: targetFocus, attempt: 0, completion: completion
+        )
     }
 
     private func resolveTargetApplication(from targetApplication: NSRunningApplication?) -> NSRunningApplication? {
@@ -84,7 +146,8 @@ final class PasteService {
     }
 
     private func pasteWithFocusRetry(
-        targetApplication: NSRunningApplication?,
+        targetApplication: NSRunningApplication,
+        targetFocus: PasteFocus?,
         attempt: Int,
         completion: ((Bool) -> Void)?
     ) {
@@ -96,13 +159,8 @@ final class PasteService {
                 return
             }
 
-            guard let targetApplication else {
-                completion?(self.triggerCommandV())
-                return
-            }
-
             if targetApplication.isTerminated {
-                completion?(self.triggerCommandV())
+                completion?(false)
                 return
             }
 
@@ -111,10 +169,11 @@ final class PasteService {
 
             if !hasFocus, attempt < self.maxFocusRetries {
                 if attempt == 2 || attempt == 5 || attempt == 8 {
-                    targetApplication.activate(options: [.activateAllWindows])
+                    targetApplication.activate(options: [])
                 }
                 self.pasteWithFocusRetry(
                     targetApplication: targetApplication,
+                    targetFocus: targetFocus,
                     attempt: attempt + 1,
                     completion: completion
                 )
@@ -122,18 +181,25 @@ final class PasteService {
             }
 
             if !hasFocus {
-                targetApplication.activate(options: [.activateAllWindows])
-                DispatchQueue.main.asyncAfter(deadline: .now() + self.finalActivationDelay) {
-                    completion?(self.triggerCommandV(to: targetApplication.processIdentifier))
-                }
+                self.logger.warning("Paste target did not regain focus: \(targetApplication.processIdentifier)")
+                completion?(false)
                 return
             }
 
-            completion?(self.triggerCommandV())
+            if targetFocus?.processIdentifier == targetApplication.processIdentifier {
+                targetFocus?.restore()
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + self.restoredFocusDelay) {
+                guard NSWorkspace.shared.frontmostApplication?.processIdentifier == targetApplication.processIdentifier else {
+                    completion?(false)
+                    return
+                }
+                completion?(self.triggerCommandV(to: targetApplication.processIdentifier))
+            }
         }
     }
 
-    private func triggerCommandV(to pid: pid_t? = nil) -> Bool {
+    private func triggerCommandV(to pid: pid_t) -> Bool {
         guard let source = CGEventSource(stateID: .hidSystemState),
               let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 9, keyDown: true),
               let keyUp = CGEvent(keyboardEventSource: source, virtualKey: 9, keyDown: false) else {
@@ -142,13 +208,8 @@ final class PasteService {
 
         keyDown.flags = .maskCommand
         keyUp.flags = .maskCommand
-        if let pid {
-            keyDown.postToPid(pid)
-            keyUp.postToPid(pid)
-        } else {
-            keyDown.post(tap: .cghidEventTap)
-            keyUp.post(tap: .cghidEventTap)
-        }
+        keyDown.postToPid(pid)
+        keyUp.postToPid(pid)
         return true
     }
 }
