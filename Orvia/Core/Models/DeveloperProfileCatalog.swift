@@ -4,8 +4,8 @@ import Foundation
 enum DeveloperProfileCatalog {
     static let displayName = "Richard Farias"
     static let linkedInURL = "https://www.linkedin.com/in/richardfariasss/"
-    static let githubURL = "https://github.com/richardfariax/clip-flow"
-    static let githubRepo = "richardfariax/clip-flow"
+    static let githubURL = "https://github.com/richardfariax/orvia"
+    static let githubRepo = "richardfariax/orvia"
 
     /// Aliases normalizados para reconhecer pedidos de abrir o perfil do desenvolvedor.
     static let nameAliases: [String] = [

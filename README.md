@@ -14,7 +14,7 @@ Clipboard, voz, desempenho e cuidado em um aplicativo nativo para macOS.</p>
   <a href="#para-desenvolvedores">Desenvolvimento</a>
 </p>
 
-> **Versão do código: 4.1.0 (build 20).** Esta versão está pronta para compilar neste repositório. A [página de releases](https://github.com/richardfariax/clip-flow/releases) pode exibir uma versão anterior até a publicação da tag `4.1.0`.
+> **Código 4.1.0 (build 20).** O instalador desta versão será disponibilizado na [página de releases](https://github.com/richardfariax/orvia/releases) após a assinatura e notarização pela Apple. Até lá, compile o projeto com as instruções abaixo.
 
 ![Central do Orvia com métricas ao vivo do Mac](docs/screenshots/central.jpg)
 
@@ -60,14 +60,14 @@ CPU, memória e temperatura podem aparecer lado a lado com seus próprios ícone
 
 **Requisitos:** Mac com Apple Silicon e macOS 27 ou posterior. Para compilar, use Xcode 27 e [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-Para experimentar o código 4.1.0 agora:
+Para compilar o código 4.1.0:
 
 ```bash
 xcodegen generate
 xcodebuild -project Orvia.xcodeproj -scheme Orvia -configuration Release -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO build
 ```
 
-`Scripts/release.sh` gera um ZIP local e `Scripts/release_dmg.sh` gera um DMG local em `build/`. Esses artefatos locais não são assinados nem notarizados. Para uma versão publicada e assinada, acompanhe os [releases](https://github.com/richardfariax/clip-flow/releases). O [cask Homebrew deste repositório](Casks/orvia.rb) aponta para o DMG da release mais recente; use-o após a publicação do `Orvia.dmg`.
+`Scripts/release.sh` gera um ZIP local e `Scripts/release_dmg.sh` gera um DMG local em `build/`. Esses artefatos locais não são assinados nem notarizados. O [cask Homebrew deste repositório](Casks/orvia.rb) estará disponível após a publicação do `Orvia.dmg` assinado e notarizado na [página de releases](https://github.com/richardfariax/orvia/releases).
 
 ## Privacidade e permissões
 

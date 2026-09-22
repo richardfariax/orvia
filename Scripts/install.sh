@@ -2,7 +2,7 @@
 set -euo pipefail
 
 OWNER="${OWNER:-richardfariax}"
-REPO="${REPO:-clip-flow}"
+REPO="${REPO:-orvia}"
 APP_NAME="${APP_NAME:-Orvia}"
 DMG_NAME="${DMG_NAME:-Orvia.dmg}"
 APP_DIR="${APP_DIR:-$HOME/Applications}"

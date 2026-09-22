@@ -2,7 +2,7 @@
 set -euo pipefail
 
 OWNER="${OWNER:-richardfariax}"
-REPO="${REPO:-clip-flow}"
+REPO="${REPO:-orvia}"
 CASK_NAME="${CASK_NAME:-orvia}"
 APP_DIR="${APP_DIR:-$HOME/Applications}"
 CASK_URL="${CASK_URL:-https://raw.githubusercontent.com/${OWNER}/${REPO}/main/Casks/${CASK_NAME}.rb}"
