@@ -69,8 +69,9 @@ final class ThermalMetricsSampler {
             guard let event = copyEvent(service, Self.temperatureEventType, 0, 0) else { continue }
             defer { Unmanaged<CFTypeRef>.fromOpaque(event).release() }
 
-            let temperature = getFloatValue(event, Self.temperatureLevelField)
-            guard temperature.isFinite, (5 ... 125).contains(temperature) else { continue }
+            guard let temperature = Self.validatedTemperature(
+                getFloatValue(event, Self.temperatureLevelField)
+            ) else { continue }
             let hardwareName = serviceName(service) 
             let group = Self.sensorGroup(for: hardwareName)
             sensors.append(ThermalSensorReading(
@@ -114,6 +115,11 @@ final class ThermalMetricsSampler {
             }
         }
         return nil
+    }
+
+    static func validatedTemperature(_ value: Double) -> Double? {
+        guard value.isFinite, (5 ... 125).contains(value) else { return nil }
+        return value
     }
 
     private static func sensorGroup(for hardwareName: String?) -> ThermalSensorGroup {

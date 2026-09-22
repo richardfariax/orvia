@@ -4,6 +4,8 @@
 
 <h1 align="center">Orvia</h1>
 
+<p align="center"><a href="https://github.com/richardfariax/orvia/actions/workflows/verify-build.yml"><img src="https://github.com/richardfariax/orvia/actions/workflows/verify-build.yml/badge.svg?branch=main" alt="Build e testes do Orvia"></a></p>
+
 <p align="center"><strong>Seu Mac, em um lugar só.</strong><br>
 Clipboard, voz, desempenho e cuidado em um aplicativo nativo para macOS.</p>
 
@@ -86,6 +88,8 @@ xcodebuild -project Orvia.xcodeproj -scheme Orvia -destination 'platform=macOS,a
 ```
 
 `Scripts/generate_brand_assets.py` reproduz os ícones a partir do master em `Orvia/Resources/Brand`. O workflow de publicação compila, assina e notariza os artefatos quando os segredos de distribuição da Apple estão configurados.
+
+O [workflow de verificação](https://github.com/richardfariax/orvia/actions/workflows/verify-build.yml) executa testes, gera ZIP e DMG e verifica os checksums sem depender das credenciais de distribuição. Os artefatos desse workflow são apenas para CI: não são assinados nem notarizados.
 
 <details>
 <summary>Problemas comuns</summary>

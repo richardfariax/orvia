@@ -1,0 +1,65 @@
+name: Verify Orvia Build
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: xcode-27
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Validate version
+        id: version
+        run: |
+          set -euo pipefail
+          ./Scripts/version.sh check
+          echo "version=$(./Scripts/version.sh read)" >> "${GITHUB_OUTPUT}"
+          echo "build=$(./Scripts/version.sh read-build)" >> "${GITHUB_OUTPUT}"
+
+      - name: Test
+        run: |
+          xcodebuild test -project Orvia.xcodeproj -scheme Orvia \
+            -destination 'platform=macOS,arch=arm64' CODE_SIGNING_ALLOWED=NO -quiet
+
+      - name: Build and verify packages
+        run: |
+          set -euo pipefail
+          ./Scripts/release.sh > "${RUNNER_TEMP}/orvia-build.log" 2>&1 || {
+            tail -n 100 "${RUNNER_TEMP}/orvia-build.log"
+            exit 1
+          }
+          ./Scripts/release_dmg.sh
+          ./Scripts/version.sh verify-app "build/Orvia.xcarchive/Products/Applications/Orvia.app"
+          shasum -a 256 -c build/Orvia.zip.sha256 build/Orvia.dmg.sha256
+          echo "### Orvia ${{ steps.version.outputs.version }} (build ${{ steps.version.outputs.build }})" >> "${GITHUB_STEP_SUMMARY}"
+          echo "Tests, ZIP, DMG, app version and SHA-256 checks passed. CI packages are unsigned; the public release requires Apple Developer ID signing and notarization." >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload unsigned CI packages
+        uses: actions/upload-artifact@v6
+        with:
+          name: Orvia-${{ steps.version.outputs.version }}-build-${{ steps.version.outputs.build }}-unsigned-ci
+          path: |
+            build/Orvia.zip
+            build/Orvia.zip.sha256
+            build/Orvia.dmg
+            build/Orvia.dmg.sha256
+          if-no-files-found: error
+          retention-days: 7
