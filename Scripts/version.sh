@@ -7,7 +7,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT}"
 
 PROJECT_YML="project.yml"
-PBXPROJ="ClipFlow.xcodeproj/project.pbxproj"
+PBXPROJ="Orvia.xcodeproj/project.pbxproj"
 
 usage() {
   cat <<'EOF'
@@ -60,7 +60,7 @@ cmd_status() {
   yml_b="$(read_yml_build)"
   pbx_v="$(read_pbx_marketing)"
   pbx_b="$(read_pbx_build)"
-  latest_tag="$(git tag --sort=-version:refname 2>/dev/null | head -n 1 || true)"
+  latest_tag="$(git tag --list 2>/dev/null | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1 || true)"
   tag_v=""
   if [[ -n "${latest_tag}" ]]; then
     tag_v="$(normalize_tag "${latest_tag}")"
@@ -151,7 +151,7 @@ cmd_bump() {
 cmd_verify_app() {
   local app_path="${1:-}"
   if [[ -z "${app_path}" || ! -d "${app_path}" ]]; then
-    echo "Uso: Scripts/version.sh verify-app <ClipFlow.app>" >&2
+    echo "Uso: Scripts/version.sh verify-app <Orvia.app>" >&2
     exit 1
   fi
 
@@ -161,16 +161,24 @@ cmd_verify_app() {
     exit 1
   fi
 
-  local expected_v expected_b app_v app_b
+  local expected_v expected_b app_v app_b app_id app_name minimum_system
   expected_v="$(read_yml_marketing)"
   expected_b="$(read_yml_build)"
   app_v="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "${plist}")"
   app_b="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "${plist}")"
+  app_id="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "${plist}")"
+  app_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleDisplayName' "${plist}")"
+  minimum_system="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "${plist}")"
 
   if [[ "${app_v}" != "${expected_v}" || "${app_b}" != "${expected_b}" ]]; then
     echo "Erro: binário não corresponde ao projeto." >&2
     echo "  esperado → ${expected_v} (${expected_b})" >&2
     echo "  app      → ${app_v} (${app_b})" >&2
+    exit 1
+  fi
+
+  if [[ "${app_id}" != "com.richadfarias.orvia" || "${app_name}" != "Orvia" || "${minimum_system}" != "27.0" ]]; then
+    echo "Erro: identidade ou versão mínima inválida no bundle: ${app_id}, ${app_name}, macOS ${minimum_system}" >&2
     exit 1
   fi
 

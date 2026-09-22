@@ -7,7 +7,7 @@ cd "${ROOT}"
 chmod +x Scripts/version.sh
 ./Scripts/version.sh check
 
-SCHEME="${SCHEME:-ClipFlow}"
+SCHEME="${SCHEME:-Orvia}"
 CONFIGURATION="${CONFIGURATION:-Release}"
 BUILD_DIR="${BUILD_DIR:-build}"
 ARCHIVE_PATH="${BUILD_DIR}/${SCHEME}.xcarchive"
@@ -20,6 +20,7 @@ rm -rf "${ARCHIVE_PATH}" "${ZIP_PATH}" "${SHA_PATH}"
 
 build_cmd=(
   xcodebuild
+  -project "Orvia.xcodeproj"
   -scheme "${SCHEME}"
   -configuration "${CONFIGURATION}"
   -archivePath "${ARCHIVE_PATH}"
@@ -47,6 +48,7 @@ elif [[ -n "${XCODE_PROJECT:-}" ]]; then
 fi
 
 echo "Compilando ${SCHEME} $(./Scripts/version.sh read) ($(./Scripts/version.sh read-build))..."
+build_cmd+=("CODE_SIGNING_ALLOWED=${CODE_SIGNING_ALLOWED:-NO}" "ARCHS=arm64")
 "${build_cmd[@]}"
 
 if [[ ! -d "${APP_PATH}" ]]; then

@@ -2,8 +2,8 @@
 set -euo pipefail
 
 OWNER="${OWNER:-richardfariax}"
-REPO="${REPO:-clip-flow}"
-CASK_NAME="${CASK_NAME:-clipflow}"
+REPO="${REPO:-orvia}"
+CASK_NAME="${CASK_NAME:-orvia}"
 APP_DIR="${APP_DIR:-$HOME/Applications}"
 CASK_URL="${CASK_URL:-https://raw.githubusercontent.com/${OWNER}/${REPO}/main/Casks/${CASK_NAME}.rb}"
 
@@ -15,4 +15,4 @@ fi
 mkdir -p "${APP_DIR}"
 brew install --cask --appdir="${APP_DIR}" "${CASK_URL}"
 
-echo "ClipFlow installed via Homebrew at ${APP_DIR}/ClipFlow.app"
+echo "Orvia installed via Homebrew at ${APP_DIR}/Orvia.app"
