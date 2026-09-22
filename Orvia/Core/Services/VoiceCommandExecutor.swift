@@ -1,7 +1,7 @@
 import AppKit
 import Foundation
 
-/// Conecta comandos de voz às ações do app. Toda fala passa pelo modelo generativo.
+/// Conecta comandos de voz às ações do app e à conversa local.
 @MainActor
 final class VoiceCommandExecutor {
     enum FollowUp {
@@ -26,7 +26,6 @@ final class VoiceCommandExecutor {
         }
     }
 
-    private let knowledgeService = KnowledgeService()
     private let generativeAnswerService = GenerativeAnswerService()
     private let settings: AppSettings
     private let panelViewModel: ClipboardPanelViewModel
@@ -69,6 +68,10 @@ final class VoiceCommandExecutor {
         }
     }
 
+    func prewarmConversation() {
+        generativeAnswerService.prewarm(userName: settings.userName.isEmpty ? nil : settings.userName)
+    }
+
     func execute(rawText: String, completion: @escaping (Feedback) -> Void) {
         guard let command = VoiceCommandParser.parse(rawText) else {
             chatWithAI(rawText, completion: completion)
@@ -79,7 +82,7 @@ final class VoiceCommandExecutor {
         case .openApp(let name):
             let opened = openApplication(named: name)
             speakAction(
-                opened ? "Abriu o app \(name)." : "Não encontrou o app chamado \(name).",
+                opened ? "Abri o app \(name)." : "Não encontrei o app chamado \(name).",
                 success: opened,
                 completion: completion
             )
@@ -88,7 +91,7 @@ final class VoiceCommandExecutor {
             screenshotService.capture(.fullScreen) { [weak self] success in
                 guard let self else { return }
                 self.speakAction(
-                    success ? "Print da tela inteira salvo no histórico." : "Falhou ao capturar a tela.",
+                    success ? "Print da tela inteira salvo no histórico." : "Não consegui capturar a tela.",
                     success: success,
                     completion: completion
                 )
@@ -133,11 +136,11 @@ final class VoiceCommandExecutor {
 
         case .openPanel:
             openPanel()
-            speakAction("Abriu o painel do Orvia.", success: true, completion: completion)
+            speakAction("Abri o painel do Orvia.", success: true, completion: completion)
 
         case .closePanel:
             closePanel()
-            speakAction("Fechou o painel do Orvia.", success: true, completion: completion)
+            speakAction("Fechei o painel do Orvia.", success: true, completion: completion)
 
         case .copyItem(let index):
             panelViewModel.refresh()
@@ -147,7 +150,7 @@ final class VoiceCommandExecutor {
             }
             let copied = panelViewModel.copyToPasteboard(item: item)
             speakAction(
-                copied ? "Copiou o item \(index) do histórico." : "Falhou ao copiar o item \(index).",
+                copied ? "Copiei o item \(index) do histórico." : "Não consegui copiar o item \(index).",
                 success: copied,
                 completion: completion
             )
@@ -158,19 +161,29 @@ final class VoiceCommandExecutor {
                 speakItemMissing(index, completion: completion)
                 return
             }
-            panelViewModel.paste(item: item, targetApplication: targetApplicationProvider())
-            speakAction("Colando o item \(index) do histórico.", success: true, completion: completion)
+            panelViewModel.paste(item: item, targetApplication: targetApplicationProvider()) { [weak self] pasted in
+                guard let self else { return }
+                self.speakAction(
+                    pasted ? "Colei o item \(index) do histórico." : self.automaticPasteFailureMessage,
+                    success: pasted,
+                    completion: completion
+                )
+            }
 
         case .pasteLast:
             panelViewModel.refresh()
-            guard panelViewModel.mostRecentItem() != nil else {
+            guard let item = panelViewModel.mostRecentItem() else {
                 speakAction("O histórico está vazio.", success: false, completion: completion)
                 return
             }
-            if let item = panelViewModel.mostRecentItem() {
-                panelViewModel.paste(item: item, targetApplication: targetApplicationProvider())
+            panelViewModel.paste(item: item, targetApplication: targetApplicationProvider()) { [weak self] pasted in
+                guard let self else { return }
+                self.speakAction(
+                    pasted ? "Colei o último item do histórico." : self.automaticPasteFailureMessage,
+                    success: pasted,
+                    completion: completion
+                )
             }
-            speakAction("Colando o último item do histórico.", success: true, completion: completion)
 
         case .readLastItem:
             panelViewModel.refresh()
@@ -192,7 +205,7 @@ final class VoiceCommandExecutor {
             }
             let copied = panelViewModel.copyToPasteboard(item: item)
             speakAction(
-                copied ? "Copiou o último item do histórico." : "Falhou ao copiar o último item.",
+                copied ? "Copiei o último item do histórico." : "Não consegui copiar o último item.",
                 success: copied,
                 completion: completion
             )
@@ -204,7 +217,7 @@ final class VoiceCommandExecutor {
                 return
             }
             panelViewModel.toggleFavorite(itemID: item.id)
-            speakAction("Favoritou o item \(index).", success: true, completion: completion)
+            speakAction("Marquei como favorito o item \(index).", success: true, completion: completion)
 
         case .deleteItem(let index):
             panelViewModel.refresh()
@@ -213,7 +226,7 @@ final class VoiceCommandExecutor {
                 return
             }
             panelViewModel.delete(itemID: item.id)
-            speakAction("Apagou o item \(index) do histórico.", success: true, completion: completion)
+            speakAction("Apaguei o item \(index) do histórico.", success: true, completion: completion)
 
         case .pinItem(let index):
             panelViewModel.refresh()
@@ -224,7 +237,7 @@ final class VoiceCommandExecutor {
             let wasPinned = item.isPinned
             panelViewModel.togglePin(itemID: item.id)
             speakAction(
-                wasPinned ? "Desafixou o item \(index)." : "Fixou o item \(index).",
+                wasPinned ? "Desafixei o item \(index)." : "Fixei o item \(index).",
                 success: true,
                 completion: completion
             )
@@ -240,17 +253,23 @@ final class VoiceCommandExecutor {
 
         case .clearHistory:
             panelViewModel.clearAll()
-            speakAction("Limpou o histórico da área de transferência.", success: true, completion: completion)
+            speakAction("Limpei o histórico da área de transferência.", success: true, completion: completion)
 
         case .dictate(let text):
-            pasteService.paste(text: text, targetApplication: targetApplicationProvider())
-            speakAction("Digitando o texto ditado.", success: true, completion: completion)
+            pasteService.paste(text: text, targetApplication: targetApplicationProvider()) { [weak self] pasted in
+                guard let self else { return }
+                self.speakAction(
+                    pasted ? "Digitei o texto ditado." : self.automaticPasteFailureMessage,
+                    success: pasted,
+                    completion: completion
+                )
+            }
 
         case .formatJSONLast:
             panelViewModel.refresh()
             let ok = panelViewModel.formatMostRecentJSON()
             speakAction(
-                ok ? "Formatou o JSON do último item e copiou." : "O último item não é um JSON válido.",
+                ok ? "Formatei o JSON do último item e copiei." : "O último item não é um JSON válido.",
                 success: ok,
                 completion: completion
             )
@@ -260,7 +279,7 @@ final class VoiceCommandExecutor {
             let ok = panelViewModel.transformMostRecent(transform)
             let name = transform.title(for: settings.language)
             speakAction(
-                ok ? "Aplicou \(name) no último item e copiou." : "Não conseguiu aplicar \(name) no último item.",
+                ok ? "Apliquei \(name) no último item e copiei." : "Não consegui aplicar \(name) no último item.",
                 success: ok,
                 completion: completion
             )
@@ -269,7 +288,7 @@ final class VoiceCommandExecutor {
             panelViewModel.refresh()
             let saved = panelViewModel.saveMostRecentAsSnippet(named: name)
             speakAction(
-                saved ? "Salvou o snippet chamado \(name)." : "Não havia nada para salvar como snippet.",
+                saved ? "Salvei o snippet \(name)." : "Não havia nada para salvar como snippet.",
                 success: saved,
                 completion: completion
             )
@@ -277,11 +296,17 @@ final class VoiceCommandExecutor {
         case .pasteSnippet(let name):
             panelViewModel.refresh()
             guard let item = panelViewModel.snippet(named: name) else {
-                speakAction("Não encontrou o snippet \(name).", success: false, completion: completion)
+                speakAction("Não encontrei o snippet \(name).", success: false, completion: completion)
                 return
             }
-            panelViewModel.paste(item: item, targetApplication: targetApplicationProvider())
-            speakAction("Colando o snippet \(name).", success: true, completion: completion)
+            panelViewModel.paste(item: item, targetApplication: targetApplicationProvider()) { [weak self] pasted in
+                guard let self else { return }
+                self.speakAction(
+                    pasted ? "Colei o snippet \(name)." : self.automaticPasteFailureMessage,
+                    success: pasted,
+                    completion: completion
+                )
+            }
 
         case .listSnippets:
             panelViewModel.refresh()
@@ -300,32 +325,37 @@ final class VoiceCommandExecutor {
             }
             panelViewModel.addToStack(itemID: item.id)
             speakAction(
-                "Adicionou o item \(index) à pilha. A pilha agora tem \(panelViewModel.pasteStack.count) itens.",
+                "Adicionei o item \(index) à pilha. A pilha agora tem \(panelViewModel.pasteStack.count) itens.",
                 success: true,
                 completion: completion
             )
 
         case .stackPasteNext:
-            let pasted = panelViewModel.pasteNextFromStack(targetApplication: targetApplicationProvider())
-            speakAction(
-                pasted
-                    ? "Colou o próximo da pilha. Restam \(panelViewModel.pasteStack.count)."
-                    : "A pilha de colagem está vazia.",
-                success: pasted,
-                completion: completion
-            )
+            let hadItem = panelViewModel.pasteNextFromStack(targetApplication: targetApplicationProvider()) { [weak self] pasted in
+                guard let self else { return }
+                self.speakAction(
+                    pasted
+                        ? "Colei o próximo da pilha. Restam \(self.panelViewModel.pasteStack.count)."
+                        : "Não consegui colar automaticamente. O item continua na pilha.",
+                    success: pasted,
+                    completion: completion
+                )
+            }
+            if !hadItem {
+                speakAction("A pilha de colagem está vazia.", success: false, completion: completion)
+            }
 
         case .stackClear:
             panelViewModel.clearStack()
-            speakAction("Limpou a pilha de colagem.", success: true, completion: completion)
+            speakAction("Limpei a pilha de colagem.", success: true, completion: completion)
 
         case .pauseMonitoring:
             settings.pauseMonitoring = true
-            speakAction("Pausou o monitoramento da área de transferência.", success: true, completion: completion)
+            speakAction("Pausei o monitoramento da área de transferência.", success: true, completion: completion)
 
         case .resumeMonitoring:
             settings.pauseMonitoring = false
-            speakAction("Retomou o monitoramento da área de transferência.", success: true, completion: completion)
+            speakAction("Retomei o monitoramento da área de transferência.", success: true, completion: completion)
 
         case .currentTime:
             let formatter = DateFormatter()
@@ -353,53 +383,61 @@ final class VoiceCommandExecutor {
 
         case .openWebsite(let site):
             if let url = websiteURL(from: site) {
-                NSWorkspace.shared.open(url)
-                speakAction("Abrindo o site \(url.host ?? site).", success: true, completion: completion)
+                let opened = NSWorkspace.shared.open(url)
+                speakAction(
+                    opened ? "Abri o site \(url.host ?? site)." : "Não consegui abrir o site \(url.host ?? site).",
+                    success: opened,
+                    completion: completion
+                )
             } else {
-                speakAction("Não conseguiu montar o endereço \(site).", success: false, completion: completion)
+                speakAction("Não consegui montar o endereço \(site).", success: false, completion: completion)
             }
 
         case .setUserName(let name):
             settings.userName = name
-            speakAction("Guardou o nome do usuário como \(name).", success: true, completion: completion)
+            speakAction("Guardei seu nome como \(name).", success: true, completion: completion)
 
         case .openDeveloperProfile:
-            if let url = URL(string: Self.developerLinkedInURL) {
-                NSWorkspace.shared.open(url)
-            }
+            let opened = URL(string: Self.developerLinkedInURL).map(NSWorkspace.shared.open) ?? false
             speakAction(
-                "Abrindo o LinkedIn de \(Self.developerName).",
-                success: true,
+                opened
+                    ? "Abri o LinkedIn de \(Self.developerName)."
+                    : "Não consegui abrir o LinkedIn agora.",
+                success: opened,
                 completion: completion
             )
 
         case .openSettings:
             openSettings()
-            speakAction("Abrindo as configurações do Orvia.", success: true, completion: completion)
+            speakAction("Abri as configurações do Orvia.", success: true, completion: completion)
 
         case .setVoiceEnabled(let enabled):
             settings.voiceControlEnabled = enabled
             speakAction(
-                enabled ? "Ativou os comandos de voz." : "Desativou os comandos de voz.",
+                enabled ? "Ativei os comandos de voz." : "Desativei os comandos de voz.",
                 success: true,
                 completion: completion
             )
 
         case .lockScreen:
-            runShellCommand("/usr/bin/pmset", arguments: ["displaysleepnow"])
-            speakAction("Bloqueou a tela.", success: true, completion: completion)
+            let slept = runShellCommand("/usr/bin/pmset", arguments: ["displaysleepnow"])
+            speakAction(
+                slept ? "Coloquei a tela em repouso." : "Não consegui colocar a tela em repouso.",
+                success: slept,
+                completion: completion
+            )
 
         case .openSpotlight:
             SystemKeySimulator.openSpotlight()
-            speakAction("Abrindo o Spotlight.", success: true, completion: completion)
+            speakAction("Abri o Spotlight.", success: true, completion: completion)
 
         case .volumeAdjust(let action):
             adjustVolume(action)
             let fact: String
             switch action {
-            case .up: fact = "Aumentou o volume."
-            case .down: fact = "Diminuiu o volume."
-            case .mute: fact = "Silenciou o som."
+            case .up: fact = "Aumentei o volume."
+            case .down: fact = "Diminuí o volume."
+            case .mute: fact = "Silenciei o som."
             }
             speakAction(fact, success: true, completion: completion)
 
@@ -407,16 +445,18 @@ final class VoiceCommandExecutor {
             adjustBrightness(action)
             let fact: String
             switch action {
-            case .up: fact = "Aumentou o brilho da tela."
-            case .down: fact = "Diminuiu o brilho da tela."
+            case .up: fact = "Aumentei o brilho da tela."
+            case .down: fact = "Diminuí o brilho da tela."
             }
             speakAction(fact, success: true, completion: completion)
 
         case .openFolder(let folder):
-            NSWorkspace.shared.open(folder.url)
+            let opened = NSWorkspace.shared.open(folder.url)
             speakAction(
-                "Abrindo a pasta \(folder.spokenName(pt: usesPortuguese)).",
-                success: true,
+                opened
+                    ? "Abri a pasta \(folder.spokenName(pt: usesPortuguese))."
+                    : "Não consegui abrir a pasta \(folder.spokenName(pt: usesPortuguese)).",
+                success: opened,
                 completion: completion
             )
 
@@ -424,13 +464,13 @@ final class VoiceCommandExecutor {
             panelViewModel.searchText = query
             panelViewModel.setFilter(.all)
             openPanel()
-            speakAction("Buscando \"\(query)\" no histórico e abrindo o painel.", success: true, completion: completion)
+            speakAction("Busquei \"\(query)\" no histórico e abri o painel.", success: true, completion: completion)
 
         case .showFilter(let filter):
             panelViewModel.setFilter(filter)
             openPanel()
             speakAction(
-                "Mostrando o filtro \(filter.title(for: settings.language)) no painel.",
+                "Mostrei o filtro \(filter.title(for: settings.language)) no painel.",
                 success: true,
                 completion: completion
             )
@@ -446,7 +486,7 @@ final class VoiceCommandExecutor {
     func handleFollowUpResponse(_ followUp: FollowUp, answer: String, completion: @escaping (Feedback) -> Void) {
         let cleaned = answer.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else {
-            speakAction("Não entendeu a resposta.", success: false, completion: completion)
+            speakAction("Não entendi a resposta.", success: false, completion: completion)
             return
         }
 
@@ -456,7 +496,7 @@ final class VoiceCommandExecutor {
 
         case .webSearch(let query):
             if isNegativeReply(cleaned) {
-                speakAction("O usuário recusou a oferta anterior.", success: true, completion: completion)
+                speakAction("Tudo bem, deixamos para lá.", success: true, completion: completion)
             } else if isAffirmativeReply(cleaned) {
                 chatWithAI(query, completion: completion)
             } else {
@@ -465,13 +505,17 @@ final class VoiceCommandExecutor {
 
         case .openURL(let urlString):
             if isNegativeReply(cleaned) {
-                speakAction("O usuário recusou a oferta anterior.", success: true, completion: completion)
+                speakAction("Tudo bem, deixamos para lá.", success: true, completion: completion)
             } else if isAffirmativeReply(cleaned) {
                 if let url = URL(string: urlString) {
-                    NSWorkspace.shared.open(url)
-                    speakAction("Abrindo o link pedido.", success: true, completion: completion)
+                    let opened = NSWorkspace.shared.open(url)
+                    speakAction(
+                        opened ? "Abri o link." : "Não consegui abrir o link.",
+                        success: opened,
+                        completion: completion
+                    )
                 } else {
-                    speakAction("Não conseguiu abrir o link.", success: false, completion: completion)
+                    speakAction("Não consegui abrir o link.", success: false, completion: completion)
                 }
             } else {
                 execute(rawText: cleaned, completion: completion)
@@ -494,7 +538,7 @@ final class VoiceCommandExecutor {
         return !words.isDisjoint(with: affirmatives)
     }
 
-    // MARK: - Fala generativa
+    // MARK: - Respostas
 
     private func speakAction(
         _ fact: String,
@@ -502,35 +546,57 @@ final class VoiceCommandExecutor {
         followUp: FollowUp? = nil,
         completion: @escaping (Feedback) -> Void
     ) {
-        respond(.action(fact: fact, success: success), success: success, followUp: followUp, useWeb: false, completion: completion)
+        // O resultado já foi verificado pelo comando. Gerá-lo de novo atrasava a resposta
+        // e podia trocar uma confirmação precisa por uma afirmação inventada.
+        completion(Feedback(message: fact, success: success, followUp: followUp))
     }
 
-    /// Único caminho conversacional: a fala do usuário vai direto para a IA com o pre-prompt de identidade.
+    private var automaticPasteFailureMessage: String {
+        settings.text(
+            ptBR: "Não consegui colar automaticamente. Confira a Acessibilidade ou use Comando V.",
+            en: "I couldn't paste automatically. Check Accessibility or press Command V."
+        )
+    }
+
+    /// Conversa livre com busca apenas quando a pergunta depende de fatos atuais.
     private func chatWithAI(_ userText: String, completion: @escaping (Feedback) -> Void) {
         let cleaned = userText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !cleaned.isEmpty else {
-            speakAction("Não entendeu o que foi dito.", success: false, completion: completion)
+            speakAction("Não entendi o que você disse.", success: false, completion: completion)
             return
         }
-        let useWeb = settings.generativeUseWebContext && QuestionPreprocessor.prepare(cleaned) != nil
-        respond(.chat(cleaned), success: true, followUp: nil, useWeb: useWeb, completion: completion)
+        guard settings.generativeAnswersEnabled else {
+            completion(Feedback(
+                message: settings.text(
+                    ptBR: "Ative Respostas generativas em Inteligência para conversar comigo.",
+                    en: "Enable Generative answers in Intelligence to chat with me."
+                ),
+                success: false
+            ))
+            return
+        }
+
+        let needsCurrentSource = QuestionPreprocessor.requiresCurrentInformation(cleaned)
+        guard !needsCurrentSource || settings.generativeUseWebContext else {
+            completion(Feedback(
+                message: settings.text(
+                    ptBR: "Para confirmar isso, preciso do Contexto da web ativado em Inteligência.",
+                    en: "I need Web context enabled in Intelligence to verify that."
+                ),
+                success: false
+            ))
+            return
+        }
+        respond(to: cleaned, useWeb: needsCurrentSource, completion: completion)
     }
 
     private func respond(
-        _ request: GenerativeAnswerService.SpokenRequest,
-        success: Bool,
-        followUp: FollowUp?,
+        to question: String,
         useWeb: Bool,
         completion: @escaping (Feedback) -> Void
     ) {
         let languageCode = settings.text(ptBR: "pt", en: "en")
         let userName = settings.userName.isEmpty ? nil : settings.userName
-        let fallbackFact = fallbackText(for: request)
-
-        guard settings.generativeAnswersEnabled else {
-            completion(Feedback(message: sanitizeFallback(fallbackFact), success: success, followUp: followUp))
-            return
-        }
 
         generativeAnswerService.refreshStatus(userName: userName)
         guard generativeAnswerService.status.isReady else {
@@ -543,7 +609,7 @@ final class VoiceCommandExecutor {
         }
 
         generativeAnswerService.respond(
-            to: request,
+            to: question,
             languageCode: languageCode,
             userName: userName,
             useWebContext: useWeb
@@ -551,10 +617,21 @@ final class VoiceCommandExecutor {
             guard let self else { return }
             switch result {
             case .success(let message):
-                let resolvedFollowUp = followUp ?? Self.resolveFollowUp(from: message)
-                completion(Feedback(message: message, success: success, followUp: resolvedFollowUp))
-            case .failure:
-                completion(Feedback(message: self.sanitizeFallback(fallbackFact), success: success, followUp: followUp))
+                completion(Feedback(message: message, success: true, followUp: Self.resolveFollowUp(from: message)))
+            case .failure(let error):
+                let message: String
+                if case GenerativeAnswerError.currentSourceUnavailable = error {
+                    message = self.settings.text(
+                        ptBR: "Não consegui confirmar isso em uma fonte atual. Tente novamente daqui a pouco.",
+                        en: "I couldn't verify that with a current source. Please try again shortly."
+                    )
+                } else {
+                    message = self.settings.text(
+                        ptBR: "Não consegui responder agora. Pode tentar de outro jeito?",
+                        en: "I couldn't answer right now. Could you try asking another way?"
+                    )
+                }
+                completion(Feedback(message: message, success: false))
             }
         }
     }
@@ -630,21 +707,6 @@ final class VoiceCommandExecutor {
         return nil
     }
 
-    private func fallbackText(for request: GenerativeAnswerService.SpokenRequest) -> String {
-        switch request {
-        case .chat(let text):
-            return text
-        case .action(let fact, _):
-            return fact
-        }
-    }
-
-    private func sanitizeFallback(_ text: String) -> String {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmed.count <= 220 { return trimmed }
-        return String(trimmed.prefix(220))
-    }
-
     private func speakItemMissing(_ index: Int, completion: @escaping (Feedback) -> Void) {
         speakAction("O item \(index) não existe no histórico.", success: false, completion: completion)
     }
@@ -653,11 +715,15 @@ final class VoiceCommandExecutor {
         var components = URLComponents(string: "https://www.google.com/search")
         components?.queryItems = [URLQueryItem(name: "q", value: query)]
         guard let url = components?.url else {
-            speakAction("Não conseguiu montar a pesquisa.", success: false, completion: completion)
+            speakAction("Não consegui preparar a pesquisa.", success: false, completion: completion)
             return
         }
-        NSWorkspace.shared.open(url)
-        speakAction("Abrindo pesquisa na web por \"\(query)\".", success: true, completion: completion)
+        let opened = NSWorkspace.shared.open(url)
+        speakAction(
+            opened ? "Abri uma pesquisa na web por \"\(query)\"." : "Não consegui abrir a pesquisa agora.",
+            success: opened,
+            completion: completion
+        )
     }
 
     private func generativeUnavailableMessage(for status: GenerativeAnswerService.ModelStatus) -> String {
@@ -693,7 +759,7 @@ final class VoiceCommandExecutor {
     private func fetchWeather(completion: @escaping (Feedback) -> Void) {
         let lang = settings.text(ptBR: "pt", en: "en")
         guard let url = URL(string: "https://wttr.in/?format=%t|%C&lang=\(lang)") else {
-            speakAction("Não conseguiu consultar o tempo.", success: false, completion: completion)
+            speakAction("Não consegui consultar o tempo.", success: false, completion: completion)
             return
         }
 
@@ -708,7 +774,7 @@ final class VoiceCommandExecutor {
                     self.speakAction(fact, success: true, completion: completion)
                 } else {
                     self.speakAction(
-                        "Não conseguiu consultar o tempo agora. Pode ser a conexão.",
+                        "Não consegui consultar o tempo agora. Pode ser a conexão.",
                         success: false,
                         completion: completion
                     )
@@ -814,11 +880,17 @@ final class VoiceCommandExecutor {
         }
     }
 
-    private func runShellCommand(_ path: String, arguments: [String]) {
+    private func runShellCommand(_ path: String, arguments: [String]) -> Bool {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: path)
         process.arguments = arguments
-        try? process.run()
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
     }
 
     private func adjustVolume(_ action: VolumeAction) {

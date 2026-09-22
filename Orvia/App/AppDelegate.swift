@@ -267,6 +267,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let voiceService = VoiceCommandService(settings: settings)
         voiceService.onWakeWordDetected = { [weak self] in
             guard let self else { return }
+            self.voiceCommandExecutor?.prewarmConversation()
             self.voiceInteractionGeneration += 1
             let hint = self.pendingFollowUp != nil
                 ? self.settings.text(ptBR: "Pode responder...", en: "Go ahead...")
@@ -381,7 +382,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             spokenResponseService.speak(
                 feedback.message,
-                languageCode: settings.text(ptBR: "pt-BR", en: "en-US")
+                languageCode: settings.text(ptBR: "pt-BR", en: "en-US"),
+                preferredVoiceIdentifier: settings.voiceIdentifier
             ) { [weak self] in
                 guard let self, self.feedbackSessionID == sessionID else { return }
                 self.voiceHUDController?.setSpeaking(false)

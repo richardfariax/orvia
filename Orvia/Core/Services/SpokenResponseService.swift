@@ -19,14 +19,19 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
         synthesizer.delegate = self
     }
 
-    func speak(_ text: String, languageCode: String, completion: (() -> Void)? = nil) {
+    func speak(
+        _ text: String,
+        languageCode: String,
+        preferredVoiceIdentifier: String = "",
+        completion: (() -> Void)? = nil
+    ) {
         stop()
         guard !text.isEmpty else {
             completion?()
             return
         }
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = bestVoice(for: languageCode)
+        utterance.voice = Self.voice(for: languageCode, preferredIdentifier: preferredVoiceIdentifier)
         utterance.rate = AVSpeechUtteranceDefaultSpeechRate
         activeUtterance = utterance
         onFinish = completion
@@ -45,17 +50,34 @@ final class SpokenResponseService: NSObject, AVSpeechSynthesizerDelegate {
         speechProgressHandler?(0)
     }
 
-    private func bestVoice(for languageCode: String) -> AVSpeechSynthesisVoice? {
+    static func availableVoices(for languageCode: String) -> [AVSpeechSynthesisVoice] {
         let target = languageCode.lowercased()
         let prefix = String(target.prefix(2))
-        let exact = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.lowercased() == target }
-        let related = AVSpeechSynthesisVoice.speechVoices().filter { $0.language.lowercased().hasPrefix(prefix) }
-        for pool in [exact, related] {
-            if let premium = pool.first(where: { $0.quality == .premium }) { return premium }
-            if let enhanced = pool.first(where: { $0.quality == .enhanced }) { return enhanced }
-            if let standard = pool.first { return standard }
+        let installed = AVSpeechSynthesisVoice.speechVoices()
+        let exact = installed.filter { $0.language.lowercased() == target }
+        let matching = exact.isEmpty
+            ? installed.filter { $0.language.lowercased().hasPrefix(prefix) }
+            : exact
+        return matching.enumerated().sorted {
+            if $0.element.quality.rawValue != $1.element.quality.rawValue {
+                return $0.element.quality.rawValue > $1.element.quality.rawValue
+            }
+            let firstIsEffect = $0.element.voiceTraits.contains(.isNoveltyVoice)
+                || $0.element.identifier.contains(".eloquence.")
+            let secondIsEffect = $1.element.voiceTraits.contains(.isNoveltyVoice)
+                || $1.element.identifier.contains(".eloquence.")
+            if firstIsEffect != secondIsEffect { return !firstIsEffect }
+            // Mantém a preferência do sistema quando qualidade e tipo são equivalentes.
+            return $0.offset < $1.offset
+        }.map(\.element)
+    }
+
+    static func voice(for languageCode: String, preferredIdentifier: String) -> AVSpeechSynthesisVoice? {
+        let voices = availableVoices(for: languageCode)
+        if let preferred = voices.first(where: { $0.identifier == preferredIdentifier }) {
+            return preferred
         }
-        return AVSpeechSynthesisVoice(language: languageCode)
+        return voices.first ?? AVSpeechSynthesisVoice(language: languageCode)
     }
 
     nonisolated func speechSynthesizer(

@@ -89,6 +89,29 @@ final class VoiceCommandParserTests: XCTestCase {
         XCTAssertNil(QuestionPreprocessor.prepare("bom dia"))
     }
 
+    func testCurrentInformationRouting() {
+        XCTAssertTrue(QuestionPreprocessor.requiresCurrentInformation("Quem é o presidente do Brasil?"))
+        XCTAssertTrue(QuestionPreprocessor.requiresCurrentInformation("Qual a cotação do dólar hoje?"))
+        XCTAssertTrue(QuestionPreprocessor.requiresCurrentInformation("What is the latest release?"))
+        XCTAssertFalse(QuestionPreprocessor.requiresCurrentInformation("Como organizar minhas tarefas hoje?"))
+        XCTAssertFalse(QuestionPreprocessor.requiresCurrentInformation("Me ajude a escrever um e-mail curto"))
+        XCTAssertFalse(QuestionPreprocessor.requiresCurrentInformation("O que é um snippet?"))
+    }
+
+    @MainActor
+    func testPreferredVoicePersists() throws {
+        let suiteName = "VoiceCommandParserTests.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let settings = AppSettings(userDefaults: defaults)
+        XCTAssertEqual(settings.voiceIdentifier, "")
+        settings.voiceIdentifier = "com.apple.voice.compact.pt-BR.Luciana"
+
+        let restored = AppSettings(userDefaults: defaults)
+        XCTAssertEqual(restored.voiceIdentifier, settings.voiceIdentifier)
+    }
+
     func testOpenDeveloperProfileAction() {
         XCTAssertEqual(VoiceCommandParser.parse("abra o linkedin do dono"), .openDeveloperProfile)
         XCTAssertEqual(VoiceCommandParser.parse("abra o linkedin"), .openWebsite("linkedin.com"))

@@ -124,9 +124,17 @@ final class ClipboardPanelViewModel: ObservableObject {
         self.selectedItemID = items[nextIndex].id
     }
 
-    func paste(item: DecodedClipboardItem, targetApplication: NSRunningApplication? = nil) {
+    func paste(
+        item: DecodedClipboardItem,
+        targetApplication: NSRunningApplication? = nil,
+        completion: ((Bool) -> Void)? = nil
+    ) {
         selectedItemID = item.id
-        pasteService.paste(item: item, targetApplication: targetApplication ?? targetApplicationProvider())
+        pasteService.paste(
+            item: item,
+            targetApplication: targetApplication ?? targetApplicationProvider(),
+            completion: completion
+        )
     }
 
     func pasteSelectedItem(targetApplication: NSRunningApplication? = nil) {
@@ -257,14 +265,21 @@ final class ClipboardPanelViewModel: ObservableObject {
     }
 
     @discardableResult
-    func pasteNextFromStack(targetApplication: NSRunningApplication? = nil) -> Bool {
+    func pasteNextFromStack(
+        targetApplication: NSRunningApplication? = nil,
+        completion: ((Bool) -> Void)? = nil
+    ) -> Bool {
         refresh()
         while !pasteStack.isEmpty {
-            let nextID = pasteStack.removeFirst()
+            let nextID = pasteStack[0]
             if let item = allItems.first(where: { $0.id == nextID }) {
-                paste(item: item, targetApplication: targetApplication)
+                paste(item: item, targetApplication: targetApplication) { [weak self] pasted in
+                    if pasted { self?.pasteStack.removeAll { $0 == nextID } }
+                    completion?(pasted)
+                }
                 return true
             }
+            pasteStack.removeFirst()
         }
         return false
     }

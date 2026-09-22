@@ -2,7 +2,7 @@ import AppKit
 import Foundation
 import FoundationModels
 
-/// Gera toda fala do Orvia via Apple Foundation Models — sem templates fixos.
+/// Gera respostas conversacionais via Apple Foundation Models.
 @MainActor
 final class GenerativeAnswerService: ObservableObject {
     enum ModelStatus: Equatable {
@@ -14,14 +14,6 @@ final class GenerativeAnswerService: ObservableObject {
         case unsupportedOS
 
         var isReady: Bool { self == .available }
-    }
-
-    /// Pedido de fala: chat livre do usuário, ou confirmação de ação do Mac.
-    enum SpokenRequest {
-        /// Fala do usuário enviada direto à IA (com o pre-prompt de identidade).
-        case chat(String)
-        /// Ação já executada; o modelo só verbaliza o resultado.
-        case action(fact: String, success: Bool)
     }
 
     enum GenerationPhase: Equatable {
@@ -80,9 +72,18 @@ final class GenerativeAnswerService: ObservableObject {
         }
     }
 
-    /// Gera a fala do Orvia para qualquer turno.
+    /// A escuta costuma dar tempo suficiente para preparar o modelo antes da pergunta.
+    func prewarm(userName: String?) {
+        refreshStatus(userName: userName)
+        guard #available(macOS 26.0, *),
+              status.isReady,
+              let session = sessionStorage as? LanguageModelSession else { return }
+        session.prewarm()
+    }
+
+    /// Gera uma resposta conversacional. Com web obrigatória, não responde sem evidência.
     func respond(
-        to request: SpokenRequest,
+        to question: String,
         languageCode: String,
         userName: String?,
         useWebContext: Bool,
@@ -95,57 +96,36 @@ final class GenerativeAnswerService: ObservableObject {
             return
         }
 
-        switch request {
-        case .chat(let text):
-            let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !cleaned.isEmpty else {
-                setPhase(.idle)
-                completion(.failure(GenerativeAnswerError.emptyQuestion))
-                return
-            }
-            if useWebContext {
-                setPhase(.fetchingWeb)
-                webSnippetSearch.fetchSpokenSnippet(query: cleaned) { [weak self] snippet in
-                    Task { @MainActor in
-                        guard let self else { return }
-                        self.setPhase(.generating)
-                        await self.generate(
-                            promptBody: self.chatPrompt(
-                                cleaned,
-                                webContext: snippet
-                            ),
-                            languageCode: languageCode,
-                            userName: userName,
-                            completion: completion
-                        )
-                    }
-                }
-            } else {
-                setPhase(.generating)
+        let cleaned = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty else {
+            setPhase(.idle)
+            completion(.failure(GenerativeAnswerError.emptyQuestion))
+            return
+        }
+        if useWebContext {
+            setPhase(.fetchingWeb)
+            webSnippetSearch.fetchSpokenSnippet(query: cleaned) { [weak self] snippet in
                 Task { @MainActor in
+                    guard let self else { return }
+                    guard let snippet, !snippet.isEmpty else {
+                        self.setPhase(.idle)
+                        completion(.failure(GenerativeAnswerError.currentSourceUnavailable))
+                        return
+                    }
+                    self.setPhase(.generating)
                     await self.generate(
-                        promptBody: self.chatPrompt(
-                            cleaned,
-                            webContext: nil
-                        ),
+                        promptBody: self.chatPrompt(cleaned, webContext: snippet),
                         languageCode: languageCode,
                         userName: userName,
                         completion: completion
                     )
                 }
             }
-
-        case .action(let fact, let success):
-            let cleaned = fact.trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !cleaned.isEmpty else {
-                setPhase(.idle)
-                completion(.failure(GenerativeAnswerError.emptyQuestion))
-                return
-            }
+        } else {
             setPhase(.generating)
             Task { @MainActor in
                 await generate(
-                    promptBody: actionPrompt(fact: cleaned, success: success),
+                    promptBody: chatPrompt(cleaned, webContext: nil),
                     languageCode: languageCode,
                     userName: userName,
                     completion: completion
@@ -157,22 +137,6 @@ final class GenerativeAnswerService: ObservableObject {
     private func setPhase(_ newPhase: GenerationPhase) {
         phase = newPhase
         onPhaseChange?(newPhase)
-    }
-
-    func answer(
-        question: String,
-        languageCode: String,
-        useWebContext: Bool,
-        userName: String? = nil,
-        completion: @escaping (Result<String, Error>) -> Void
-    ) {
-        respond(
-            to: .chat(question),
-            languageCode: languageCode,
-            userName: userName,
-            useWebContext: useWebContext,
-            completion: completion
-        )
     }
 
     func openAppleIntelligenceSettings() {
@@ -209,37 +173,21 @@ final class GenerativeAnswerService: ObservableObject {
 
     private func chatPrompt(_ userText: String, webContext: String?) -> String {
         var body = """
-            Vá DIRETO à resposta. Sem saudação, sem "e aí", sem "oi", sem começar pelo nome do usuário.
-            Só cumprimente se a mensagem do usuário for APENAS um oi/e aí — senão, responde o que foi perguntado.
-            Você é o Orvia (só Orvia — nunca outro nome). Português brasileiro jovem, humanizado, tech, natural pra TTS.
-            Se for papo casual, converse de verdade: reaja, tenha personalidade, pode perguntar de volta.
-            Não vire tutorial do app nem invente nomes/ferramentas.
-            Usuário: \(userText)
+            Pedido do usuário: \(userText)
+            Responda ao pedido concreto, sem saudação automática. Para produtividade, ofereça \
+            uma próxima ação útil e viável, com no máximo três passos quando necessário. \
+            Se faltar contexto, faça uma pergunta curta. Não afirme ter executado ações que não executou.
             """
         if let webContext, !webContext.isEmpty {
             body += """
 
-
-            Contexto recente da internet (pode estar incompleto; use para fatos atuais):
+            Trecho encontrado na web (pode estar incompleto ou incorreto):
             \(webContext)
+            Use o trecho só se ele responder claramente à pergunta. \
+            Não complete lacunas com suposições; se a fonte não bastar, diga que não conseguiu confirmar.
             """
         }
         return body
-    }
-
-    private func actionPrompt(fact: String, success: Bool) -> String {
-        let tone = success
-            ? "O fato abaixo já aconteceu com sucesso."
-            : "O fato abaixo descreve uma falha."
-        return """
-            \(tone)
-            Fato: \(fact)
-
-            Responda SOMENTE com a frase que o Orvia deve falar em voz alta.
-            Tom: português brasileiro jovem, gíria leve e natural (fechou, suave, deu ruim, top…).
-            Regras: uma frase curta; use o fato; sem cumprimento no começo; \
-            não repita estas regras; não diga "fato", "sucesso", "falha" nem instruções.
-            """
     }
 
     // MARK: - Generate
@@ -262,8 +210,8 @@ final class GenerativeAnswerService: ObservableObject {
         }
 
         let languageHint = languageCode.lowercased().hasPrefix("pt")
-            ? "Responda como o Orvia: direto ao ponto, sem saudação. Português BR jovem, humanizado e tech."
-            : "Answer as Orvia: direct, no greeting. Casual human tech-savvy English."
+            ? "Fale como o Orvia em português brasileiro natural, com frases que soem bem em voz alta."
+            : "Speak as Orvia in natural English, with sentences that sound good aloud."
 
         let prompt = """
             \(languageHint)
@@ -478,6 +426,7 @@ final class GenerativeAnswerService: ObservableObject {
 enum GenerativeAnswerError: LocalizedError {
     case emptyQuestion
     case emptyResponse
+    case currentSourceUnavailable
     case modelUnavailable(GenerativeAnswerService.ModelStatus)
 
     var errorDescription: String? {
@@ -486,6 +435,8 @@ enum GenerativeAnswerError: LocalizedError {
             return "Pedido vazio."
         case .emptyResponse:
             return "O modelo não retornou texto."
+        case .currentSourceUnavailable:
+            return "Não foi possível consultar uma fonte atual."
         case .modelUnavailable(let status):
             switch status {
             case .available:

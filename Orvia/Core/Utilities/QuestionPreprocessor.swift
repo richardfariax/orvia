@@ -2,6 +2,31 @@ import Foundation
 
 /// Normaliza perguntas faladas (STT) para melhorar busca e intenção.
 enum QuestionPreprocessor {
+    /// Perguntas que não devem receber um palpite baseado apenas no modelo local.
+    static func requiresCurrentInformation(_ rawText: String) -> Bool {
+        let normalized = VoiceCommandParser.normalize(rawText)
+        let words = Set(normalized.split(separator: " ").map(String.init))
+        let currentSubjects: Set<String> = [
+            "noticia", "noticias", "news", "preco", "precos", "price", "prices",
+            "cotacao", "exchange", "dolar", "euro", "bitcoin", "bolsa",
+            "presidente", "president", "ceo", "eleicao", "election",
+            "placar", "score", "resultado", "resultados", "vencedor", "winner",
+            "clima", "weather", "previsao", "forecast", "temperatura"
+        ]
+        if !words.isDisjoint(with: currentSubjects) { return true }
+
+        let freshnessWords: Set<String> = [
+            "hoje", "agora", "atualmente", "recente", "recentes", "ultima", "ultimo",
+            "today", "now", "currently", "latest", "recent"
+        ]
+        let factualOpeners: Set<String> = [
+            "quem", "qual", "quais", "quando", "onde", "quanto", "quantos", "quantas",
+            "who", "what", "when", "where", "how"
+        ]
+        return !words.isDisjoint(with: freshnessWords)
+            && !words.isDisjoint(with: factualOpeners)
+    }
+
     /// Remove preenchimentos de fala e retorna a pergunta limpa, ou nil se não for pergunta.
     static func prepare(_ rawText: String) -> String? {
         var result = rawText.trimmingCharacters(in: .whitespacesAndNewlines)

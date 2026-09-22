@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import SwiftUI
 
 private enum SettingsPane: String, Identifiable, Hashable {
@@ -85,6 +86,7 @@ struct SettingsView: View {
     @State private var isRecordingCustomHotkey = false
     @State private var hotkeyRecorderMonitor: AnyObject?
     @State private var hotkeyRecorderMessage: String?
+    @State private var voicePreviewService = SpokenResponseService()
     @StateObject private var generativeAnswers = GenerativeAnswerService()
 
     private let linkedInURL = URL(string: DeveloperProfileCatalog.linkedInURL)!
@@ -439,7 +441,9 @@ struct SettingsView: View {
     }
 
     private var voiceForm: some View {
-        VStack(alignment: .leading, spacing: 18) {
+        let languageCode = settings.text(ptBR: "pt-BR", en: "en-US")
+        let voices = SpokenResponseService.availableVoices(for: languageCode)
+        return VStack(alignment: .leading, spacing: 18) {
             paneHeader(
                 pane: .voice,
                 subtitle: t(
@@ -484,14 +488,33 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    LabeledContent(t("Voz do Orvia", "Orvia voice")) {
-                        Text(t("Voz do sistema", "System voice"))
-                            .foregroundStyle(.secondary)
+                    Picker(t("Voz do Orvia", "Orvia voice"), selection: $settings.voiceIdentifier) {
+                        Text(t("Automática · melhor disponível", "Automatic · best available"))
+                            .tag("")
+                        ForEach(voices, id: \.identifier) { voice in
+                            Text("\(voice.name) · \(voiceQualityName(voice.quality))")
+                                .tag(voice.identifier)
+                        }
+                        if !settings.voiceIdentifier.isEmpty,
+                           !voices.contains(where: { $0.identifier == settings.voiceIdentifier }) {
+                            Text(t("Voz anterior indisponível", "Previous voice unavailable"))
+                                .tag(settings.voiceIdentifier)
+                        }
+                    }
+                    Button(t("Ouvir exemplo", "Play sample")) {
+                        voicePreviewService.speak(
+                            t(
+                                "Vamos organizar o que importa primeiro. Qual é a sua prioridade agora?",
+                                "Let's focus on what matters first. What's your priority right now?"
+                            ),
+                            languageCode: languageCode,
+                            preferredVoiceIdentifier: settings.voiceIdentifier
+                        )
                     }
                 } footer: {
                     Text(t(
-                        "O Orvia escolhe a melhor voz disponível no macOS para o idioma selecionado.",
-                        "Orvia chooses the best macOS voice available for the selected language."
+                        "Vozes premium ou aprimoradas instaladas no macOS aparecem primeiro. A prévia usa a voz selecionada.",
+                        "Premium or enhanced macOS voices appear first. The sample uses your selected voice."
                     ))
                 }
 
@@ -519,6 +542,18 @@ struct SettingsView: View {
             }
             .orviaSettingsFormStyle()
         }
+        .onDisappear { voicePreviewService.stop() }
+    }
+
+    private func voiceQualityName(_ quality: AVSpeechSynthesisVoiceQuality) -> String {
+        switch quality {
+        case .premium:
+            return t("premium", "premium")
+        case .enhanced:
+            return t("aprimorada", "enhanced")
+        default:
+            return t("padrão", "standard")
+        }
     }
 
     private var intelligenceForm: some View {
@@ -540,13 +575,13 @@ struct SettingsView: View {
                 Section {
                     Toggle(t("Respostas generativas", "Generative answers"), isOn: $settings.generativeAnswersEnabled)
                         .accessibilityHint(t(
-                            "Quando ativo, o Orvia gera todas as falas com Apple Intelligence.",
-                            "When on, Orvia generates all speech with Apple Intelligence."
+                            "A conversa usa Apple Intelligence; confirmações de comandos são imediatas.",
+                            "Conversation uses Apple Intelligence; command confirmations are immediate."
                         ))
                 } footer: {
                     Text(t(
-                        "O Orvia usa o modelo gratuito do Apple Intelligence no seu Mac. Sem respostas fixas de conversa.",
-                        "Orvia uses the free Apple Intelligence model on your Mac. No hard-coded conversation replies."
+                        "O Orvia usa o modelo do Apple Intelligence no Mac para conversar. Ações executadas são confirmadas sem esperar pelo modelo.",
+                        "Orvia uses the Apple Intelligence model on your Mac for conversation. Completed actions are confirmed without waiting for the model."
                     ))
                 }
 
@@ -554,8 +589,8 @@ struct SettingsView: View {
                     Section {
                         Toggle(t("Contexto da web", "Web context"), isOn: $settings.generativeUseWebContext)
                             .accessibilityHint(t(
-                                "Busca trechos gratuitos na internet antes de responder perguntas factuais.",
-                                "Fetches free web snippets before answering factual questions."
+                                "Consulta a web quando a resposta precisa de fatos atuais.",
+                                "Searches the web when an answer needs current facts."
                             ))
 
                         if settings.generativeUseWebContext {
